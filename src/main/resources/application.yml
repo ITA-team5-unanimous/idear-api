@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: idear-api
+  profiles:
+    active: local # 기본 active profile
+
+server:
+  servlet:
+    context-path: /api
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    url: ${LOCAL_MYSQL_URL}
+    username: ${LOCAL_MYSQL_USER}
+    password: ${LOCAL_MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  sql:
+    init:
+      mode: always
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        show-sql: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${PROD_MYSQL_URL}
+    username: ${PROD_MYSQL_USER}
+    password: ${PROD_MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  sql:
+    init:
+      mode: never
+
+  jpa:
+    hibernate:
+      ddl-auto: update # Migration 도구 사용 고려 (validate)
+    properties:
+      hibernate:
+        show-sql: false
