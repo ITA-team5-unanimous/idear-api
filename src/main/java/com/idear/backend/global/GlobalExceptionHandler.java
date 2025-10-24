@@ -16,10 +16,11 @@ public class GlobalExceptionHandler {
 
     // CustomException 처리
     @ExceptionHandler(CustomException.class)
-    protected ResponseEntity<?> handleCustomException(CustomException e) {
-        log.error("handleCustomException", e);
-        ErrorCode errorCode = e.getErrorCode();
-        return new ResponseEntity<>(errorCode.getMessage(), errorCode.getStatus());
+    public ResponseEntity<ApiResponse<?>> handleCustomException(CustomException ex) {
+        ErrorCode errorCode = ex.getErrorCode();
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(ApiResponse.error(errorCode));
     }
     
     // 404 Not Found 처리
