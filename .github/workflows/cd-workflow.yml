@@ -5,7 +5,6 @@ on:
     branches:
       - 'master'
       - 'develop'
-      - 'feat/#4-ci-cd-pipeline'
 
 permissions:
   contents: read
