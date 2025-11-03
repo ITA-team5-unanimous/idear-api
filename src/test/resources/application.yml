@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: idear-api
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        show-sql: true
+
+  h2:
+    console:
+      enabled: false
