@@ -7,9 +7,7 @@ spring:
     multipart:
       max-file-size: 20MB
       max-request-size: 20MB
-  task:
-    scheduling:
-      enabled: false
+
   data:
     redis:
       host: ${REDIS_HOST}
@@ -21,10 +19,6 @@ spring:
 idear:
   crawler:
     enabled: false # 크롤러 비활성화
-
-idear:
-  crawler:
-    enabled: false
 
 server:
   servlet:
