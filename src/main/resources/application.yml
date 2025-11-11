@@ -10,9 +10,23 @@ idear:
   crawler:
     enabled: false # 크롤러 비활성화
 
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+
 server:
   servlet:
     context-path: /api
+
+secret:
+  jwt:
+    key: ${JWT_KEY}
+    access:
+      expiration: 3600000
+    refresh:
+      expiration: 1209600000
 
 ---
 spring:
