@@ -72,6 +72,14 @@ jobs:
                  -e PROD_MYSQL_URL=${{ secrets.PROD_MYSQL_URL }} \
                  -e PROD_MYSQL_USER=${{ secrets.PROD_MYSQL_USER }} \
                  -e PROD_MYSQL_PASSWORD=${{ secrets.PROD_MYSQL_PASSWORD }} \
+                 -e REDIS_HOST=${{ secrets.REDIS_HOST }} \
+                 -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
+                 -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
+                 -e JWT_KEY=${{ secrets.JWT_KEY }} \
+                 -e FRONT_ORIGIN=${{ secrets.FRONT_ORIGIN }} \
+                 -e KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} \
+                 -e KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }} \
+                 -e KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }} \
                  ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}
 
             sudo docker system prune -f
