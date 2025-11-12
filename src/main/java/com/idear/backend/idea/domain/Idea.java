@@ -45,7 +45,7 @@ public class Idea {
 	private String description;
 
 	@OneToMany(mappedBy = "idea", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<IdeaFile> images = new ArrayList<>();
+	private List<IdeaFile> files = new ArrayList<>();
 
 	@Column(length = 64)
 	private String proofHash;
@@ -56,9 +56,24 @@ public class Idea {
 	private LocalDateTime createdAt;
 
 	public enum IdeaStatus {
-		REGISTERED,
 		PROVING,
 		COMPLETED,
 		WITHDRAWN
+	}
+
+	private Idea(String title, String shortDescription, String description, IdeaStatus status, LocalDateTime createdAt) {
+		this.title = title;
+		this.shortDescription = shortDescription;
+		this.description = description;
+		this.status = status;
+		this.createdAt = createdAt;
+	}
+
+	public static Idea registerIdea(String title, String shortDescription, String description){
+		return new Idea(title, shortDescription, description, IdeaStatus.PROVING, LocalDateTime.now());
+	}
+
+	public void addFile(List<IdeaFile> files){
+		this.files.addAll(files);
 	}
 }

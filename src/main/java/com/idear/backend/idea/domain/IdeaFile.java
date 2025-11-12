@@ -38,6 +38,17 @@ public class IdeaFile {
 
 	public enum FileType {
 		IMAGE,
-		ATTACHMENT
+		FILE
+	}
+
+	private IdeaFile(Idea idea, String fileName, String filePath, FileType fileType) {
+		this.idea = idea;
+		this.fileName = fileName;
+		this.filePath = filePath;
+		this.fileType = fileType;
+	}
+
+	public static IdeaFile registerIdeaFile(Idea idea, String fileName, String filePath, FileType fileType) {
+		return new IdeaFile(idea, fileName, filePath, fileType);
 	}
 }
