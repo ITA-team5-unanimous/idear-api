@@ -60,7 +60,7 @@ public class Contest {
   private String homepageUrl;
 
   @Comment("조회수")
-  private Long viewCount = 0L;
+  private Long viewCount;
 
   @Comment("생성 시각")
   private LocalDateTime createdAt;
