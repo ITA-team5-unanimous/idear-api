@@ -22,9 +22,8 @@ public class S3FileStorageService implements FileStorageService {
 	private final AmazonS3 amazonS3;
 
 	@Override
-	public String uploadFile(MultipartFile file, String uploadDir){
-		String storedFileName = file.getOriginalFilename();
-		String key = uploadDir + "/" + storedFileName;
+	public String uploadFile(MultipartFile file, String fileName, String uploadDir){
+		String key = uploadDir + "/" + fileName;
 
 		ObjectMetadata objectMetadata = new ObjectMetadata();
 		objectMetadata.setContentType(file.getContentType());
@@ -51,7 +50,7 @@ public class S3FileStorageService implements FileStorageService {
 			if (!isObjectExist){
 				throw new CustomException(ErrorCode.FILE_NOTFOUND_ERROR);
 			}
-			amazonS3.deleteObject(storedFileName, key);
+			amazonS3.deleteObject(S3_BUCKET_NAME, key);
 
 		} catch (CustomException e){
 			throw e;
