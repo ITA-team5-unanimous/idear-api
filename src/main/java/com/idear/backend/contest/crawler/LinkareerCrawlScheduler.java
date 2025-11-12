@@ -49,7 +49,7 @@ public class LinkareerCrawlScheduler {
    * 매일 오전 12시에 일일 업데이트 실행
    * 1. 마감된 공모전 삭제
    * 2. 새 공모전 추가
-   * 3. 조회수 업데이트
+   * 3. 인기 공모전 추출
    */
   @Scheduled(cron = "0 0 0 * * *")
   public void scheduledDailyUpdate() {

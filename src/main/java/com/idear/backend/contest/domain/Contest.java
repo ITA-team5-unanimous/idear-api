@@ -59,9 +59,6 @@ public class Contest {
   @Comment("공식 홈페이지 URL")
   private String homepageUrl;
 
-  @Comment("조회수")
-  private Long viewCount;
-
   @Comment("생성 시각")
   private LocalDateTime createdAt;
 
@@ -77,13 +74,6 @@ public class Contest {
   @PreUpdate
   protected void onUpdate() {
     updatedAt = LocalDateTime.now();
-  }
-
-  /**
-   * 조회수 업데이트
-   */
-  public void updateViewCount(Long viewCount) {
-    this.viewCount = viewCount != null ? viewCount : 0L;
   }
 
   /**
