@@ -1,5 +1,12 @@
 package com.idear.backend.global.config;
 
+import com.idear.backend.global.security.filter.ExceptionHandlerFilter;
+import com.idear.backend.global.security.handler.CustomAccessDeniedHandler;
+import com.idear.backend.global.security.handler.CustomAuthenticationEntryPoint;
+import com.idear.backend.global.security.filter.JwtAuthenticationFilter;
+import com.idear.backend.global.security.oauth.service.CustomOAuth2UserService;
+import com.idear.backend.global.security.oauth.handler.OAuth2AuthenticationSuccessHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -10,21 +17,32 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final ExceptionHandlerFilter exceptionHandlerFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+
     private final String[] PUBLIC_POST = {
-            "/test/**"
+            "/auth/reissue"
     };
 
     private final String[] PUBLIC_GET = {
             "/",
-            "/test/**"
+            "/test/hello",
+            "/oauth2/authorization/**",
+            "/login/oauth2/code/**"
     };
 
     private final String[] PUBLIC_PUT = {
@@ -37,10 +55,20 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
 
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+
                 .sessionManagement(session
                         -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // OAuth2 로그인 설정
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService))
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
+                )
 
                 // 경로별 접근제어
                 .authorizeHttpRequests(auth -> auth
@@ -48,6 +76,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, PUBLIC_GET).permitAll()
                         .requestMatchers(HttpMethod.PUT, PUBLIC_PUT).permitAll()
                         .anyRequest().authenticated()
+                )
+
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(exceptionHandlerFilter, JwtAuthenticationFilter.class)
+
+                // 예외 처리
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
                 );
 
         return http.build();
