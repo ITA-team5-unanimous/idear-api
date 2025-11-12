@@ -3,6 +3,12 @@ spring:
     name: idear-api
   profiles:
     active: local # 기본 active profile
+  task:
+    scheduling:
+      enabled: false # 스케줄러 비활성화
+idear:
+  crawler:
+    enabled: false # 크롤러 비활성화
 
 server:
   servlet:
