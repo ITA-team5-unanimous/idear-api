@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.idear.backend.global.exception.CustomException;
+import com.idear.backend.global.exception.ErrorCode;
 import com.idear.backend.idea.domain.Idea;
 import com.idear.backend.idea.domain.IdeaFile;
 import com.idear.backend.idea.dto.request.IdeaRegisterRequest;
@@ -50,6 +52,20 @@ public class IdeaService {
 
 		//TODO blockchain 등록, hash 저장, 완료 후 status 변경
 		// blockchain.prove();
+	}
+
+	@Transactional
+	public void deleteIdea(Long ideaId) {
+		Idea idea = ideaRepository.findById(ideaId)
+			.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
+
+		List<IdeaFile> files = idea.getFiles();
+		for(IdeaFile ideaFile : files){
+			String dir = ideaFile.getFileType() == IdeaFile.FileType.IMAGE ? "image" : "file";
+			fileStorageService.deleteFile(ideaFile.getFileName(), dir);
+		}
+
+		ideaRepository.deleteById(ideaId);
 	}
 
 
