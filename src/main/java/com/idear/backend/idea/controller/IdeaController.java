@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,4 +37,17 @@ public class IdeaController {
 		ideaService.registerIdea(ideaRegisterRequest, files);
 		return ResponseEntity.ok(ApiResponse.success());
 	}
+
+	/**
+	 * DELETE /api/idea/{ideaId} : 아이디어 삭제
+	 */
+	@DeleteMapping
+	public ResponseEntity<ApiResponse<Void>> deleteIdea(
+		@RequestParam("ideaId") Long ideaId
+	) {
+		ideaService.deleteIdea(ideaId);
+		return ResponseEntity.ok(ApiResponse.success());
+	}
+
+
 }
