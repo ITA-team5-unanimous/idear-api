@@ -28,6 +28,9 @@ public class IdeaFile {
 	private Idea idea;
 
 	@Column(nullable = false)
+	private String originalFileName;
+
+	@Column(nullable = false)
 	private String fileName;
 
 	@Column(nullable = false)
@@ -41,14 +44,15 @@ public class IdeaFile {
 		FILE
 	}
 
-	private IdeaFile(Idea idea, String fileName, String filePath, FileType fileType) {
+	private IdeaFile(Idea idea, String originalFileName, String fileName, String filePath, FileType fileType) {
 		this.idea = idea;
+		this.originalFileName = originalFileName;
 		this.fileName = fileName;
 		this.filePath = filePath;
 		this.fileType = fileType;
 	}
 
-	public static IdeaFile registerIdeaFile(Idea idea, String fileName, String filePath, FileType fileType) {
-		return new IdeaFile(idea, fileName, filePath, fileType);
+	public static IdeaFile registerIdeaFile(Idea idea, String originalFileName,String fileName, String filePath, FileType fileType) {
+		return new IdeaFile(idea, originalFileName, fileName, filePath, fileType);
 	}
 }
