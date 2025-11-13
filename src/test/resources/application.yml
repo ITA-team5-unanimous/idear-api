@@ -53,3 +53,12 @@ secret:
       expiration: 3600000
     refresh:
       expiration: 1209600000
+
+cloud:
+  aws:
+    credentials:
+      access-key: test
+      secret-key: tes
+    bucket: idear-file
+    region:
+      static: ap-northeast-2

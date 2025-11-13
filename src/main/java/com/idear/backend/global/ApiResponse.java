@@ -22,6 +22,9 @@ public class ApiResponse<T> {
     }
 
     // SUCCESS
+    public static <T> ApiResponse<T> success() {
+        return new ApiResponse<>(STATUS_SUCCESS, "200", "OK", null);
+    }
     public static <T> ApiResponse<T> success(T data) {
         return new ApiResponse<>(STATUS_SUCCESS, "200", "OK", data);
     }
@@ -39,4 +42,5 @@ public class ApiResponse<T> {
                 null
         );
     }
+
 }
