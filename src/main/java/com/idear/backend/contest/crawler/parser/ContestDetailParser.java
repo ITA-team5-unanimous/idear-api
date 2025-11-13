@@ -1,6 +1,8 @@
 package com.idear.backend.contest.crawler.parser;
 
 import com.idear.backend.contest.domain.Contest;
+import com.idear.backend.global.exception.CustomException;
+import com.idear.backend.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -13,7 +15,6 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -31,7 +32,7 @@ public class ContestDetailParser {
   /**
    * 상세 페이지 크롤링
    */
-  public Contest parseDetailPage(String linkareerUrl) throws IOException {
+  public Contest parseDetailPage(String linkareerUrl) {
     try {
       log.debug("Selenium으로 상세 페이지 로드: {}", linkareerUrl);
 
@@ -57,8 +58,6 @@ public class ContestDetailParser {
       LocalDate startDate = dates[0];
       LocalDate deadline = dates[1];
 
-      Long viewCount = parseViewCount(doc);
-
       return Contest.builder()
         .title(title)
         .host(host)
@@ -70,47 +69,15 @@ public class ContestDetailParser {
         .description(description)
         .linkareerUrl(linkareerUrl)
         .homepageUrl(homepageUrl)
-        .viewCount(viewCount != null ? viewCount : 0L)
         .build();
 
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      log.error("크롤링 중단: {}", linkareerUrl, e);
+      throw CustomException.of(ErrorCode.CRAWLING_FAILED, "상세 페이지 크롤링 중단");
     } catch (Exception e) {
       log.error("Selenium 크롤링 실패: {}", linkareerUrl, e);
-      throw new IOException("상세 페이지 크롤링 실패", e);
-    }
-  }
-
-  /**
-   * 상세 페이지에서 조회수만 크롤링
-   */
-  public Long fetchViewCount(String linkareerUrl) throws IOException {
-    try {
-      log.debug("Selenium으로 조회수만 로드: {}", linkareerUrl);
-
-      driver.get(linkareerUrl);
-
-      WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-      // 조회수 영역(or 페이지 주요 콘텐츠) 렌더 대기
-      // aria-label에 '조회' 문자열이 포함된 span.count가 생길 때까지 대기, 실패 시 h1로 폴백
-      try {
-        wait.until(ExpectedConditions.presenceOfElementLocated(
-          By.cssSelector("span.count[aria-label*='조회']")));
-      } catch (Exception ignore) {
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("h1")));
-      }
-
-      // 첫 렌더 직후 약간의 지연(동적 카운터 반영 여유)
-      Thread.sleep(800);
-
-      String pageSource = driver.getPageSource();
-      Document doc = Jsoup.parse(pageSource);
-
-      Long vc = parseViewCount(doc);
-      log.debug("조회수 파싱 결과: {}", vc);
-      return vc != null ? vc : 0L;
-
-    } catch (Exception e) {
-      log.error("조회수 크롤링 실패: {}", linkareerUrl, e);
-      throw new IOException("조회수 크롤링 실패", e);
+      throw CustomException.of(ErrorCode.CRAWLING_FAILED, "상세 페이지 크롤링 실패: " + linkareerUrl);
     }
   }
 
@@ -197,41 +164,6 @@ public class ContestDetailParser {
       }
     }
     return null;
-  }
-
-  /**
-   * 조회수 파싱
-   */
-  private Long parseViewCount(Document doc) {
-    try {
-      log.debug("=== 조회수 파싱 시작 ===");
-
-      Elements countSpans = doc.select("span.count");
-      log.debug("전체 span.count 개수: {}", countSpans.size());
-
-      for (Element countSpan : countSpans) {
-        String text = countSpan.text().trim();
-        String ariaLabel = countSpan.attr("aria-label");
-
-        log.debug("span.count 발견 - aria-label: '{}', text: '{}'", ariaLabel, text);
-
-        if (ariaLabel != null && ariaLabel.contains("조회")) {
-          String numberOnly = text.replaceAll("[^0-9]", "");
-          if (!numberOnly.isEmpty()) {
-            Long count = Long.parseLong(numberOnly);
-            log.debug("조회수 파싱 성공: {}", count);
-            return count;
-          }
-        }
-      }
-
-      log.debug("조회수를 찾을 수 없습니다");
-
-    } catch (Exception e) {
-      log.error("조회수 파싱 실패", e);
-    }
-
-    return 0L;
   }
 
   /**

@@ -51,7 +51,7 @@ public class LinkareerCrawlScheduler {
    * 2. 새 공모전 추가
    * 3. 인기 공모전 추출
    */
-  @Scheduled(cron = "0 0 0 * * *")
+  @Scheduled(cron = "0 * * * * *")
   public void scheduledDailyUpdate() {
     // 초기 백필이 완료되지 않았으면 스킵
     if (!initialBackfillCompleted.get()) {
