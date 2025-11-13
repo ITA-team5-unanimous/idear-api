@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.idear.backend.global.ApiResponse;
-import com.idear.backend.idea.application.FileStorageService;
 import com.idear.backend.idea.application.IdeaService;
 import com.idear.backend.idea.dto.request.IdeaRegisterRequest;
 
