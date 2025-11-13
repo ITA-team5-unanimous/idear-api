@@ -3,7 +3,9 @@ package com.idear.backend.idea.application;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +16,11 @@ import com.idear.backend.global.exception.ErrorCode;
 import com.idear.backend.idea.domain.Idea;
 import com.idear.backend.idea.domain.IdeaFile;
 import com.idear.backend.idea.dto.request.IdeaRegisterRequest;
+import com.idear.backend.idea.dto.response.IdeaFileResponse;
+import com.idear.backend.idea.dto.response.IdeaResponse;
 import com.idear.backend.idea.infrastructure.repository.IdeaRepository;
+import com.idear.backend.user.domain.User;
+import com.idear.backend.user.infrastructure.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,6 +30,7 @@ public class IdeaService {
 
 	private final IdeaRepository ideaRepository;
 	private final FileStorageService fileStorageService;
+	private final UserRepository userRepository;
 
 	@Transactional
 	public void registerIdea(IdeaRegisterRequest ideaRegisterRequest, List<MultipartFile> files) throws IOException {
@@ -66,6 +73,41 @@ public class IdeaService {
 		}
 
 		ideaRepository.deleteById(ideaId);
+	}
+
+	@Transactional(readOnly = true)
+	public List<IdeaResponse> getIdeasByUser(Long userId) {
+		//TODO 도메인 연결 후 수정 필요
+		// User user = userRepository.findById(userId)
+		// 	.orElseThrow(() -> CustomException.of(ErrorCode.USER_NOT_FOUND));
+		// //List<Idea> ideas = ideaRepository.findAllByUser(user);
+		List<Idea> ideas = ideaRepository.findAll();
+
+		List<IdeaResponse> responses = new ArrayList<>();
+
+		for(Idea idea : ideas){
+			List<IdeaFileResponse> fileResponses = idea.getFiles().stream()
+				.map(ideaFile -> IdeaFileResponse.builder()
+					.fileId(ideaFile.getFileId())
+					.fileName(ideaFile.getFileName())
+					.fileType(String.valueOf(ideaFile.getFileType()))
+					.filePath(ideaFile.getFilePath())
+					.build())
+				.collect(Collectors.toList());
+
+			IdeaResponse ideaResponse = IdeaResponse.builder()
+				.title(idea.getTitle())
+				.shortDescription(idea.getShortDescription())
+				.description(idea.getDescription())
+				.status(idea.getStatus())
+				.createdAt(idea.getCreatedAt())
+				.files(fileResponses)
+				.build();
+
+			responses.add(ideaResponse);
+		}
+
+		return responses;
 	}
 
 
