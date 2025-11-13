@@ -58,4 +58,7 @@ cloud:
   aws:
     credentials:
       access-key: test
-      secret-key: estt
+      secret-key: tes
+    bucket: idear-file
+    region:
+      static: ap-northeast-2
