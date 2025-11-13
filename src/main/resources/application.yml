@@ -5,16 +5,16 @@ spring:
     active: local # 기본 active profile
   task:
     scheduling:
-      enabled: false # 스케줄러 비활성화
-idear:
-  crawler:
-    enabled: false # 크롤러 비활성화
-
+      enabled: false
   data:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
+
+idear:
+  crawler:
+    enabled: false
 
 server:
   servlet:
@@ -42,11 +42,11 @@ spring:
 
   sql:
     init:
-      mode: always
+      mode: never
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         show-sql: true
