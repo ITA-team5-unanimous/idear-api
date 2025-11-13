@@ -2,6 +2,7 @@ package com.idear.backend.idea.infrastructure.external;
 
 import java.io.IOException;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,7 +19,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class S3FileStorageService implements FileStorageService {
 
-	private static final String S3_BUCKET_NAME = "idear-file";
+	@Value("${cloud.aws.bucket}")
+	private String bucketName;
 	private final AmazonS3 amazonS3;
 
 	@Override
@@ -31,29 +33,27 @@ public class S3FileStorageService implements FileStorageService {
 
 		try {
 			PutObjectRequest putObjectRequest =
-				new PutObjectRequest(S3_BUCKET_NAME, key, file.getInputStream(), objectMetadata);
+				new PutObjectRequest(bucketName, key, file.getInputStream(), objectMetadata);
 			amazonS3.putObject(putObjectRequest);
 		} catch (IOException e) {
 			throw CustomException.of(ErrorCode.FILE_UPLOAD_ERROR);
 		}
 
-		String accessUrl = amazonS3.getUrl(S3_BUCKET_NAME, key).toString();
+		String accessUrl = amazonS3.getUrl(bucketName, key).toString();
 
 		return accessUrl;
 	}
 
 	@Override
 	public void deleteFile(String storedFileName, String uploadDir) {
-		String key = uploadDir + storedFileName;
+		String key = uploadDir + "/" + storedFileName;
 		try {
-			boolean isObjectExist = amazonS3.doesObjectExist(S3_BUCKET_NAME, key);
+			boolean isObjectExist = amazonS3.doesObjectExist(bucketName, key);
 			if (!isObjectExist){
 				throw CustomException.of(ErrorCode.FILE_NOTFOUND_ERROR);
 			}
-			amazonS3.deleteObject(S3_BUCKET_NAME, key);
+			amazonS3.deleteObject(bucketName, key);
 
-		} catch (CustomException e){
-			throw e;
 		} catch (Exception e) {
 			throw CustomException.of(ErrorCode.FILE_DELETE_ERROR);
 		}
