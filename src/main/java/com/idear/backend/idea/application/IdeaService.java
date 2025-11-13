@@ -83,30 +83,27 @@ public class IdeaService {
 		// //List<Idea> ideas = ideaRepository.findAllByUser(user);
 		List<Idea> ideas = ideaRepository.findAll();
 
-		List<IdeaResponse> responses = new ArrayList<>();
+		List<IdeaResponse> responses = ideas.stream().map(
+			idea -> {
+				List<IdeaFileResponse> fileResponses = idea.getFiles().stream()
+					.map(ideaFile -> IdeaFileResponse.builder()
+						.fileId(ideaFile.getFileId())
+						.originalFileName(ideaFile.getOriginalFileName())
+						.fileName(ideaFile.getFileName())
+						.fileType(String.valueOf(ideaFile.getFileType()))
+						.filePath(ideaFile.getFilePath())
+						.build())
+					.collect(Collectors.toList());
 
-		for(Idea idea : ideas){
-			List<IdeaFileResponse> fileResponses = idea.getFiles().stream()
-				.map(ideaFile -> IdeaFileResponse.builder()
-					.fileId(ideaFile.getFileId())
-					.originalFileName(ideaFile.getOriginalFileName())
-					.fileName(ideaFile.getFileName())
-					.fileType(String.valueOf(ideaFile.getFileType()))
-					.filePath(ideaFile.getFilePath())
-					.build())
-				.collect(Collectors.toList());
-
-			IdeaResponse ideaResponse = IdeaResponse.builder()
-				.title(idea.getTitle())
-				.shortDescription(idea.getShortDescription())
-				.description(idea.getDescription())
-				.status(idea.getStatus())
-				.createdAt(idea.getCreatedAt())
-				.files(fileResponses)
-				.build();
-
-			responses.add(ideaResponse);
-		}
+				return IdeaResponse.builder()
+					.title(idea.getTitle())
+					.shortDescription(idea.getShortDescription())
+					.description(idea.getDescription())
+					.status(idea.getStatus())
+					.createdAt(idea.getCreatedAt())
+					.files(fileResponses)
+					.build();
+			}).collect(Collectors.toList());
 
 		return responses;
 	}
