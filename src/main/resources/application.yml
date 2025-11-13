@@ -16,6 +16,12 @@ idear:
   crawler:
     enabled: false
 
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+
 server:
   servlet:
     context-path: /api
