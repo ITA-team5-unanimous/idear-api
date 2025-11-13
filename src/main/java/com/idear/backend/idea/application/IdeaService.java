@@ -74,7 +74,7 @@ public class IdeaService {
 			fileStorageService.deleteFile(ideaFile.getFileName(), dir);
 		}
 
-		ideaRepository.deleteById(ideaId);
+		ideaRepository.delete(idea);
 	}
 
 	@Transactional(readOnly = true)
