@@ -23,6 +23,9 @@ cloud:
     credentials:
       access-key: ${S3_ACCESS_KEY}
       secret-key: ${S3_SECRET_KEY}
+    bucket: idear-file
+    region:
+      static: ap-northeast-2
 
 secret:
   jwt:
