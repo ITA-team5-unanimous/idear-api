@@ -34,8 +34,10 @@ public class IdeaService {
 
 	@Transactional
 	public void registerIdea(IdeaRegisterRequest ideaRegisterRequest, List<MultipartFile> files) throws IOException {
+		User user = userRepository.findById(ideaRegisterRequest.getUserId())
+			.orElseThrow(() -> CustomException.of(ErrorCode.USER_NOT_FOUND));
 		Idea idea = Idea.registerIdea(
-			ideaRegisterRequest.getTitle(), ideaRegisterRequest.getShortDescription(), ideaRegisterRequest.getDescription()
+			user, ideaRegisterRequest.getTitle(), ideaRegisterRequest.getShortDescription(), ideaRegisterRequest.getDescription()
 		);
 		ideaRepository.save(idea);
 
@@ -77,11 +79,9 @@ public class IdeaService {
 
 	@Transactional(readOnly = true)
 	public List<IdeaResponse> getIdeasByUser(Long userId) {
-		//TODO 도메인 연결 후 수정 필요
-		// User user = userRepository.findById(userId)
-		// 	.orElseThrow(() -> CustomException.of(ErrorCode.USER_NOT_FOUND));
-		// //List<Idea> ideas = ideaRepository.findAllByUser(user);
-		List<Idea> ideas = ideaRepository.findAll();
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> CustomException.of(ErrorCode.USER_NOT_FOUND));
+		List<Idea> ideas = ideaRepository.findAllByUser(user);
 
 		List<IdeaResponse> responses = new ArrayList<>();
 
@@ -97,6 +97,7 @@ public class IdeaService {
 				.collect(Collectors.toList());
 
 			IdeaResponse ideaResponse = IdeaResponse.builder()
+				.ideaId(idea.getIdeaId())
 				.title(idea.getTitle())
 				.shortDescription(idea.getShortDescription())
 				.description(idea.getDescription())
