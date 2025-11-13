@@ -47,7 +47,7 @@ public class IdeaService {
 					String dir = parseExtension(file);
 					IdeaFile.FileType fileType = dir.equals("image") ? IdeaFile.FileType.IMAGE : IdeaFile.FileType.FILE;
 					String url = fileStorageService.uploadFile(file, fileName, dir);
-					IdeaFile ideaFile = IdeaFile.registerIdeaFile(idea, fileName, url, fileType);
+					IdeaFile ideaFile = IdeaFile.registerIdeaFile(idea, file.getOriginalFilename(), fileName, url, fileType);
 					ideaFiles.add(ideaFile);
 				}
 			}
@@ -89,6 +89,7 @@ public class IdeaService {
 			List<IdeaFileResponse> fileResponses = idea.getFiles().stream()
 				.map(ideaFile -> IdeaFileResponse.builder()
 					.fileId(ideaFile.getFileId())
+					.originalFileName(ideaFile.getOriginalFileName())
 					.fileName(ideaFile.getFileName())
 					.fileType(String.valueOf(ideaFile.getFileType()))
 					.filePath(ideaFile.getFilePath())

@@ -7,6 +7,7 @@ import lombok.Getter;
 @Builder
 public class IdeaFileResponse {
 	private Long fileId;
+	private String originalFileName;
 	private String fileName;
 	private String fileType;
 	private String filePath;
