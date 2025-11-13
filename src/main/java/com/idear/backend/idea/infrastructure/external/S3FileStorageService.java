@@ -34,7 +34,7 @@ public class S3FileStorageService implements FileStorageService {
 				new PutObjectRequest(S3_BUCKET_NAME, key, file.getInputStream(), objectMetadata);
 			amazonS3.putObject(putObjectRequest);
 		} catch (IOException e) {
-			throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
+			throw CustomException.of(ErrorCode.FILE_UPLOAD_ERROR);
 		}
 
 		String accessUrl = amazonS3.getUrl(S3_BUCKET_NAME, key).toString();
@@ -48,14 +48,14 @@ public class S3FileStorageService implements FileStorageService {
 		try {
 			boolean isObjectExist = amazonS3.doesObjectExist(S3_BUCKET_NAME, key);
 			if (!isObjectExist){
-				throw new CustomException(ErrorCode.FILE_NOTFOUND_ERROR);
+				throw CustomException.of(ErrorCode.FILE_NOTFOUND_ERROR);
 			}
 			amazonS3.deleteObject(S3_BUCKET_NAME, key);
 
 		} catch (CustomException e){
 			throw e;
 		} catch (Exception e) {
-			throw new CustomException(ErrorCode.FILE_DELETE_ERROR);
+			throw CustomException.of(ErrorCode.FILE_DELETE_ERROR);
 		}
 	}
 }
