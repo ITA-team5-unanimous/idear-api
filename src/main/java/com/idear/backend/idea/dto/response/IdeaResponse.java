@@ -2,6 +2,7 @@ package com.idear.backend.idea.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.idear.backend.idea.domain.Idea;
 
@@ -18,4 +19,19 @@ public class IdeaResponse {
 	private Idea.IdeaStatus status;
 	private LocalDateTime createdAt;
 	private List<IdeaFileResponse> files;
+
+	public static IdeaResponse of(Idea idea) {
+		List<IdeaFileResponse> fileResponses = idea.getFiles().stream()
+			.map(IdeaFileResponse::of)
+			.collect(Collectors.toList());
+
+		return IdeaResponse.builder()
+			.title(idea.getTitle())
+			.shortDescription(idea.getShortDescription())
+			.description(idea.getDescription())
+			.status(idea.getStatus())
+			.createdAt(idea.getCreatedAt())
+			.files(fileResponses)
+			.build();
+	}
 }

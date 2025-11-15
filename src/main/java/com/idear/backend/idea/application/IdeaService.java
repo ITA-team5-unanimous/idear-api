@@ -83,27 +83,9 @@ public class IdeaService {
 		// //List<Idea> ideas = ideaRepository.findAllByUser(user);
 		List<Idea> ideas = ideaRepository.findAll();
 
-		List<IdeaResponse> responses = ideas.stream().map(
-			idea -> {
-				List<IdeaFileResponse> fileResponses = idea.getFiles().stream()
-					.map(ideaFile -> IdeaFileResponse.builder()
-						.fileId(ideaFile.getFileId())
-						.originalFileName(ideaFile.getOriginalFileName())
-						.fileName(ideaFile.getFileName())
-						.fileType(String.valueOf(ideaFile.getFileType()))
-						.filePath(ideaFile.getFilePath())
-						.build())
-					.collect(Collectors.toList());
-
-				return IdeaResponse.builder()
-					.title(idea.getTitle())
-					.shortDescription(idea.getShortDescription())
-					.description(idea.getDescription())
-					.status(idea.getStatus())
-					.createdAt(idea.getCreatedAt())
-					.files(fileResponses)
-					.build();
-			}).collect(Collectors.toList());
+		List<IdeaResponse> responses = ideas.stream()
+			.map(IdeaResponse::of)
+			.collect(Collectors.toList());
 
 		return responses;
 	}
