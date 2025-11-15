@@ -77,6 +77,8 @@ jobs:
                  -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
                  -e JWT_KEY=${{ secrets.JWT_KEY }} \
                  -e FRONT_ORIGIN=${{ secrets.FRONT_ORIGIN }} \
+                 -e S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }} \
+                 -e S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }} \
                  -e KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} \
                  -e KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }} \
                  -e KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }} \
