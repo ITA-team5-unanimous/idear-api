@@ -3,16 +3,24 @@ package com.idear.backend.idea.application;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.idear.backend.global.exception.CustomException;
+import com.idear.backend.global.exception.ErrorCode;
 import com.idear.backend.idea.domain.Idea;
 import com.idear.backend.idea.domain.IdeaFile;
 import com.idear.backend.idea.dto.request.IdeaRegisterRequest;
+import com.idear.backend.idea.dto.response.IdeaFileResponse;
+import com.idear.backend.idea.dto.response.IdeaResponse;
 import com.idear.backend.idea.infrastructure.repository.IdeaRepository;
+import com.idear.backend.user.domain.User;
+import com.idear.backend.user.infrastructure.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +30,7 @@ public class IdeaService {
 
 	private final IdeaRepository ideaRepository;
 	private final FileStorageService fileStorageService;
+	private final UserRepository userRepository;
 
 	@Transactional
 	public void registerIdea(IdeaRegisterRequest ideaRegisterRequest, List<MultipartFile> files) throws IOException {
@@ -38,7 +47,7 @@ public class IdeaService {
 					String dir = parseExtension(file);
 					IdeaFile.FileType fileType = dir.equals("image") ? IdeaFile.FileType.IMAGE : IdeaFile.FileType.FILE;
 					String url = fileStorageService.uploadFile(file, fileName, dir);
-					IdeaFile ideaFile = IdeaFile.registerIdeaFile(idea, fileName, url, fileType);
+					IdeaFile ideaFile = IdeaFile.registerIdeaFile(idea, file.getOriginalFilename(), fileName, url, fileType);
 					ideaFiles.add(ideaFile);
 				}
 			}
@@ -50,6 +59,35 @@ public class IdeaService {
 
 		//TODO blockchain 등록, hash 저장, 완료 후 status 변경
 		// blockchain.prove();
+	}
+
+	@Transactional
+	public void deleteIdea(Long ideaId) {
+		Idea idea = ideaRepository.findById(ideaId)
+			.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
+
+		List<IdeaFile> files = idea.getFiles();
+		for(IdeaFile ideaFile : files){
+			String dir = ideaFile.getFileType() == IdeaFile.FileType.IMAGE ? "image" : "file";
+			fileStorageService.deleteFile(ideaFile.getFileName(), dir);
+		}
+
+		ideaRepository.deleteById(ideaId);
+	}
+
+	@Transactional(readOnly = true)
+	public List<IdeaResponse> getIdeasByUser(Long userId) {
+		//TODO 도메인 연결 후 수정 필요
+		// User user = userRepository.findById(userId)
+		// 	.orElseThrow(() -> CustomException.of(ErrorCode.USER_NOT_FOUND));
+		// //List<Idea> ideas = ideaRepository.findAllByUser(user);
+		List<Idea> ideas = ideaRepository.findAll();
+
+		List<IdeaResponse> responses = ideas.stream()
+			.map(IdeaResponse::of)
+			.collect(Collectors.toList());
+
+		return responses;
 	}
 
 
