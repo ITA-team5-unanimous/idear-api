@@ -12,6 +12,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class IdeaResponse {
+	private Long ideaId;
 	private String title;
 	private String shortDescription;
 	private String description;

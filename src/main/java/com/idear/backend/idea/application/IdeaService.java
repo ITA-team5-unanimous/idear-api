@@ -3,7 +3,6 @@ package com.idear.backend.idea.application;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -16,7 +15,6 @@ import com.idear.backend.global.exception.ErrorCode;
 import com.idear.backend.idea.domain.Idea;
 import com.idear.backend.idea.domain.IdeaFile;
 import com.idear.backend.idea.dto.request.IdeaRegisterRequest;
-import com.idear.backend.idea.dto.response.IdeaFileResponse;
 import com.idear.backend.idea.dto.response.IdeaResponse;
 import com.idear.backend.idea.infrastructure.repository.IdeaRepository;
 import com.idear.backend.user.domain.User;
@@ -34,8 +32,10 @@ public class IdeaService {
 
 	@Transactional
 	public void registerIdea(IdeaRegisterRequest ideaRegisterRequest, List<MultipartFile> files) throws IOException {
+		User user = userRepository.findById(ideaRegisterRequest.getUserId())
+			.orElseThrow(() -> CustomException.of(ErrorCode.USER_NOT_FOUND));
 		Idea idea = Idea.registerIdea(
-			ideaRegisterRequest.getTitle(), ideaRegisterRequest.getShortDescription(), ideaRegisterRequest.getDescription()
+			user, ideaRegisterRequest.getTitle(), ideaRegisterRequest.getShortDescription(), ideaRegisterRequest.getDescription()
 		);
 		ideaRepository.save(idea);
 
@@ -72,20 +72,17 @@ public class IdeaService {
 			fileStorageService.deleteFile(ideaFile.getFileName(), dir);
 		}
 
-		ideaRepository.deleteById(ideaId);
+		ideaRepository.delete(idea);
 	}
 
 	@Transactional(readOnly = true)
 	public List<IdeaResponse> getIdeasByUser(Long userId) {
-		//TODO 도메인 연결 후 수정 필요
-		// User user = userRepository.findById(userId)
-		// 	.orElseThrow(() -> CustomException.of(ErrorCode.USER_NOT_FOUND));
-		// //List<Idea> ideas = ideaRepository.findAllByUser(user);
-		List<Idea> ideas = ideaRepository.findAll();
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> CustomException.of(ErrorCode.USER_NOT_FOUND));
+		List<Idea> ideas = ideaRepository.findAllByUser(user);
 
 		List<IdeaResponse> responses = ideas.stream()
-			.map(IdeaResponse::of)
-			.collect(Collectors.toList());
+			.map(IdeaResponse::of).collect(Collectors.toList());
 
 		return responses;
 	}
