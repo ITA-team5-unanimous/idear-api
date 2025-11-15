@@ -4,10 +4,10 @@ import com.idear.backend.contest.domain.Contest;
 import com.idear.backend.contest.dto.DDayResponse;
 import com.idear.backend.contest.repository.ContestRepository;
 import com.idear.backend.global.ApiResponse;
-import com.idear.backend.global.exception.CustomException;
-import com.idear.backend.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.util.List;
