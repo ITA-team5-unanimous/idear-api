@@ -21,6 +21,13 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Install Chrome
+        run: |
+          set -ex
+          sudo apt-get update -y
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo apt install -y ./google-chrome-stable_current_amd64.deb
+
       - name: Grant execute permission to gradlew
         shell: bash
         run: chmod +x ./gradlew
