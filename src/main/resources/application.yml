@@ -15,10 +15,11 @@ spring:
       password: ${REDIS_PASSWORD}
   task:
     scheduling:
-      enabled: false # 스케줄러 비활성화
+      enabled: true
+
 idear:
   crawler:
-    enabled: false # 크롤러 비활성화
+    enabled: true
 
 server:
   servlet:
