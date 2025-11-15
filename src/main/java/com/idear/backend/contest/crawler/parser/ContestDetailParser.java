@@ -40,8 +40,11 @@ public class ContestDetailParser {
 
       WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
       wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("h1")));
-
-      Thread.sleep(2000);
+      wait.until(ExpectedConditions.and(
+        ExpectedConditions.presenceOfElementLocated(By.cssSelector("h2.organization-name")),
+        ExpectedConditions.presenceOfElementLocated(By.cssSelector("dl")),
+        ExpectedConditions.presenceOfElementLocated(By.cssSelector("div.responsive-element"))
+      ));
 
       String pageSource = driver.getPageSource();
       Document doc = Jsoup.parse(pageSource);
@@ -71,10 +74,6 @@ public class ContestDetailParser {
         .homepageUrl(homepageUrl)
         .build();
 
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      log.error("크롤링 중단: {}", linkareerUrl, e);
-      throw CustomException.of(ErrorCode.CRAWLING_FAILED, "상세 페이지 크롤링 중단");
     } catch (Exception e) {
       log.error("Selenium 크롤링 실패: {}", linkareerUrl, e);
       throw CustomException.of(ErrorCode.CRAWLING_FAILED, "상세 페이지 크롤링 실패: " + linkareerUrl);

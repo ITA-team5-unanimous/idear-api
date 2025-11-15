@@ -29,7 +29,6 @@ public class LinkareerCrawler {
 
   private static final int MAX_PAGES = 3; // 크롤링할 최대 페이지 수(초기 백필용, 테스트 3페이지)
   private static final int TOP_N_POPULAR = 10; // 인기 공모전 개수
-  private static final long CRAWL_INTERVAL_MS = 100;
 
   /**
    * 초기 백필 (최초 1회 실행)
@@ -122,23 +121,15 @@ public class LinkareerCrawler {
 
       // URL을 하나씩 처리하면서 중복 발견 시 즉시 return으로 전체 종료
       for (String url : urls) {
-        try {
-          // DB 중복 체크 - 상세 크롤링 전에 먼저 확인
-          if (contestRepository.existsByLinkareerUrl(url)) {
-            log.info("기존 공모전 발견 ({}페이지), 전체 크롤링 중단: {}", page, url);
-            return totalSaved; // 즉시 return으로 메서드 종료
-          }
+        // DB 중복 체크 - 상세 크롤링 전에 먼저 확인
+        if (contestRepository.existsByLinkareerUrl(url)) {
+          log.info("기존 공모전 발견 ({}페이지), 전체 크롤링 중단: {}", page, url);
+          return totalSaved; // 즉시 return으로 메서드 종료
+        }
 
-          Thread.sleep(CRAWL_INTERVAL_MS);
-
-          // 중복이 아니면 상세 크롤링 & 저장
-          if (saveService.saveContestIfNotExists(url, processedUrls)) {
-            totalSaved++;
-          }
-
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          throw CustomException.of(ErrorCode.CRAWLING_FAILED);
+        // 중복이 아니면 상세 크롤링 & 저장
+        if (saveService.saveContestIfNotExists(url, processedUrls)) {
+          totalSaved++;
         }
       }
 
@@ -218,16 +209,8 @@ public class LinkareerCrawler {
     int saved = 0;
 
     for (String url : urls) {
-      try {
-        Thread.sleep(CRAWL_INTERVAL_MS);
-
-        if (saveService.saveContestIfNotExists(url, processedUrls)) {
-          saved++;
-        }
-
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        throw CustomException.of(ErrorCode.CRAWLING_FAILED);
+      if (saveService.saveContestIfNotExists(url, processedUrls)) {
+        saved++;
       }
     }
 

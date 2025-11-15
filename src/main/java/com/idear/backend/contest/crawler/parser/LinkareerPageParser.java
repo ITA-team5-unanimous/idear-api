@@ -32,12 +32,12 @@ public class LinkareerPageParser {
     try {
       log.info("{}페이지 로드 시작", page);
 
+      WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+
       // 첫 페이지는 URL로 직접 이동
       if (page == 1) {
         String pageUrl = buildListUrl(1);
         driver.get(pageUrl);
-
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
 
         // 페이지 로딩 대기
         wait.until(ExpectedConditions.presenceOfElementLocated(
@@ -49,7 +49,11 @@ public class LinkareerPageParser {
           By.cssSelector("button.button-page-number")
         ));
 
-        Thread.sleep(2000);
+        // 실제 콘텐츠 링크가 로드될 때까지 대기
+        wait.until(ExpectedConditions.numberOfElementsToBeMoreThan(
+          By.cssSelector("a[href*='/activity/']"), 0
+        ));
+
         log.info("1페이지 로드 완료");
 
       } else {
@@ -58,11 +62,14 @@ public class LinkareerPageParser {
         String listUrl = buildListUrl(1);  // 1페이지로 먼저 이동
         driver.get(listUrl);
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         wait.until(ExpectedConditions.presenceOfElementLocated(
           By.cssSelector("button.button-page-number")
         ));
-        Thread.sleep(2000);
+
+        // 페이지네이션이 완전히 렌더링될 때까지 대기
+        wait.until(ExpectedConditions.numberOfElementsToBeMoreThan(
+          By.cssSelector("button.button-page-number"), 0
+        ));
 
         log.info("목록 페이지 복귀 완료, {}페이지 버튼 클릭 시도", page);
         clickPaginationButton(page);
@@ -70,9 +77,6 @@ public class LinkareerPageParser {
 
       // 스크롤을 여러 번 시도
       scrollToBottomMultipleTimes();
-
-      // 마지막 대기
-      Thread.sleep(3000);
 
       return extractUrls(page);
 
@@ -94,8 +98,6 @@ public class LinkareerPageParser {
   private void clickPaginationButton(int targetPage) {
     try {
       WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-
-      Thread.sleep(1000);
 
       List<WebElement> pageButtons = driver.findElements(
         By.cssSelector("button.button-page-number")
@@ -124,28 +126,26 @@ public class LinkareerPageParser {
 
         // 버튼을 화면 중앙으로 스크롤
         js.executeScript("arguments[0].scrollIntoView({block: 'center'});", targetButton);
-        Thread.sleep(500);
+
+        // 스크롤 후 요소가 안정될 때까지 대기
+        wait.until(ExpectedConditions.elementToBeClickable(targetButton));
 
         js.executeScript("arguments[0].click();", targetButton);
         log.info("{}페이지 버튼 클릭 완료", targetPage);
-
-        // 페이지 전환 충분히 대기
-        Thread.sleep(3000);
 
         // 새 콘텐츠 로딩 대기
         wait.until(ExpectedConditions.presenceOfElementLocated(
           By.cssSelector("section[class*='ActivityList'][class*='desktop']")
         ));
 
+        // URL이 변경되었는지 확인
+        wait.until(driver -> driver.getCurrentUrl().contains("page=" + targetPage));
+
       } else {
         log.error("페이지 버튼을 찾을 수 없습니다: {}", targetPage);
         throw CustomException.of(ErrorCode.PAGE_PARSING_FAILED, "페이지 버튼을 찾을 수 없습니다: " + targetPage);
       }
 
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      log.error("페이지네이션 버튼 클릭 중단", e);
-      throw CustomException.of(ErrorCode.CRAWLING_FAILED, "페이지 이동 중단");
     } catch (CustomException e) {
       throw e; // CustomException은 그대로 전파
     } catch (Exception e) {
@@ -160,6 +160,7 @@ public class LinkareerPageParser {
   private void scrollToBottomMultipleTimes() {
     try {
       JavascriptExecutor js = (JavascriptExecutor) driver;
+      WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
 
       // 총 2번 스크롤 시도
       for (int round = 0; round < 2; round++) {
@@ -170,12 +171,29 @@ public class LinkareerPageParser {
         // 천천히 스크롤 다운
         for (int i = 0; i < 5; i++) {
           js.executeScript("window.scrollBy(0, 500);");
-          Thread.sleep(300);
+
+          // 각 스크롤 후 짧은 대기 (DOM 업데이트 시간 확보)
+          try {
+            wait.until(driver ->
+              (Long) js.executeScript("return document.readyState === 'complete'")
+            );
+          } catch (Exception e) {
+            // readyState 체크 실패해도 계속 진행
+          }
         }
 
         // 맨 아래로
         js.executeScript("window.scrollTo(0, document.body.scrollHeight);");
-        Thread.sleep(2000);
+
+        // 새 콘텐츠 로딩 대기 (높이 변화 또는 타임아웃)
+        try {
+          wait.until(driver -> {
+            Long newHeight = (Long) js.executeScript("return document.body.scrollHeight");
+            return !newHeight.equals(lastHeight);
+          });
+        } catch (Exception e) {
+          // 높이 변화 없으면 다음 라운드로
+        }
 
         Long newHeight = (Long) js.executeScript("return document.body.scrollHeight");
 
@@ -189,11 +207,9 @@ public class LinkareerPageParser {
 
       // 맨 위로 스크롤 (전체 콘텐츠 확인용)
       js.executeScript("window.scrollTo(0, 0);");
-      Thread.sleep(1000);
 
       // 다시 맨 아래로
       js.executeScript("window.scrollTo(0, document.body.scrollHeight);");
-      Thread.sleep(1000);
 
       log.debug("스크롤 완료");
 
@@ -276,8 +292,6 @@ public class LinkareerPageParser {
         By.cssSelector("section[class*='ActivityList'][class*='desktop']")
       ));
 
-      Thread.sleep(2000);
-
       // orderby-box 또는 orderby-menu-container 찾기
       WebElement menuContainer = null;
 
@@ -301,11 +315,18 @@ public class LinkareerPageParser {
       // JavaScript로 클릭
       JavascriptExecutor js = (JavascriptExecutor) driver;
       js.executeScript("arguments[0].scrollIntoView({block: 'center'});", menuContainer);
-      Thread.sleep(500);
+
+      // 요소가 클릭 가능할 때까지 대기
+      wait.until(ExpectedConditions.elementToBeClickable(menuContainer));
+
       js.executeScript("arguments[0].click();", menuContainer);
 
       log.debug("정렬 메뉴 열림");
-      Thread.sleep(1000);
+
+      // 드롭다운 메뉴가 나타날 때까지 대기
+      wait.until(ExpectedConditions.presenceOfElementLocated(
+        By.cssSelector("div.orderby-menu-item")
+      ));
 
       // '최신순' 찾아서 클릭
       List<WebElement> menuItems = driver.findElements(
@@ -332,12 +353,11 @@ public class LinkareerPageParser {
         throw CustomException.of(ErrorCode.PAGE_PARSING_FAILED, "'최신순' 정렬 옵션을 찾을 수 없습니다");
       }
 
-      Thread.sleep(2000);
+      // 페이지가 새로고침되거나 콘텐츠가 업데이트될 때까지 대기
+      wait.until(ExpectedConditions.presenceOfElementLocated(
+        By.cssSelector("section[class*='ActivityList'][class*='desktop']")
+      ));
 
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      log.error("정렬 기준 변경 중단", e);
-      throw CustomException.of(ErrorCode.CRAWLING_FAILED, "정렬 기준 변경 중단");
     } catch (CustomException e) {
       throw e; // CustomException은 그대로 전파
     } catch (Exception e) {
@@ -392,11 +412,18 @@ public class LinkareerPageParser {
       // 메뉴 컨테이너 클릭 (JavaScript 사용)
       JavascriptExecutor js = (JavascriptExecutor) driver;
       js.executeScript("arguments[0].scrollIntoView({block: 'center'});", menuContainer);
-      Thread.sleep(500);
+
+      // 요소가 클릭 가능할 때까지 대기
+      wait.until(ExpectedConditions.elementToBeClickable(menuContainer));
+
       js.executeScript("arguments[0].click();", menuContainer);
 
       log.debug("정렬 메뉴 열림");
-      Thread.sleep(1000);
+
+      // 드롭다운 메뉴가 나타날 때까지 대기
+      wait.until(ExpectedConditions.presenceOfElementLocated(
+        By.cssSelector("div.orderby-menu-item")
+      ));
 
       // orderby-menu-list 내의 '최근 스크랩 증가순' 찾아서 클릭
       List<WebElement> menuItems = driver.findElements(
@@ -423,12 +450,11 @@ public class LinkareerPageParser {
         throw CustomException.of(ErrorCode.PAGE_PARSING_FAILED, "'최근 스크랩 증가순' 정렬 옵션을 찾을 수 없습니다");
       }
 
-      Thread.sleep(2000); // 페이지 로딩 대기
+      // 페이지가 새로고침되거나 콘텐츠가 업데이트될 때까지 대기
+      wait.until(ExpectedConditions.presenceOfElementLocated(
+        By.cssSelector("section[class*='ActivityList'][class*='desktop']")
+      ));
 
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      log.error("정렬 기준 변경 중단", e);
-      throw CustomException.of(ErrorCode.CRAWLING_FAILED, "정렬 기준 변경 중단");
     } catch (CustomException e) {
       throw e;
     } catch (Exception e) {
