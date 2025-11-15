@@ -15,7 +15,6 @@ import com.idear.backend.global.exception.ErrorCode;
 import com.idear.backend.idea.domain.Idea;
 import com.idear.backend.idea.domain.IdeaFile;
 import com.idear.backend.idea.dto.request.IdeaRegisterRequest;
-import com.idear.backend.idea.dto.response.IdeaFileResponse;
 import com.idear.backend.idea.dto.response.IdeaResponse;
 import com.idear.backend.idea.infrastructure.repository.IdeaRepository;
 import com.idear.backend.user.domain.User;
@@ -82,31 +81,8 @@ public class IdeaService {
 			.orElseThrow(() -> CustomException.of(ErrorCode.USER_NOT_FOUND));
 		List<Idea> ideas = ideaRepository.findAllByUser(user);
 
-		List<IdeaResponse> responses = new ArrayList<>();
-
-		for(Idea idea : ideas){
-			List<IdeaFileResponse> fileResponses = idea.getFiles().stream()
-				.map(ideaFile -> IdeaFileResponse.builder()
-					.fileId(ideaFile.getFileId())
-					.originalFileName(ideaFile.getOriginalFileName())
-					.fileName(ideaFile.getFileName())
-					.fileType(String.valueOf(ideaFile.getFileType()))
-					.filePath(ideaFile.getFilePath())
-					.build())
-				.collect(Collectors.toList());
-
-			IdeaResponse ideaResponse = IdeaResponse.builder()
-				.ideaId(idea.getIdeaId())
-				.title(idea.getTitle())
-				.shortDescription(idea.getShortDescription())
-				.description(idea.getDescription())
-				.status(idea.getStatus())
-				.createdAt(idea.getCreatedAt())
-				.files(fileResponses)
-				.build();
-
-			responses.add(ideaResponse);
-		}
+		List<IdeaResponse> responses = ideas.stream()
+			.map(IdeaResponse::of).collect(Collectors.toList());
 
 		return responses;
 	}
