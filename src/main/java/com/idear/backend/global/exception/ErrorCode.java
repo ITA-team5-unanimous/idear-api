@@ -29,7 +29,8 @@ public enum ErrorCode {
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "A005", "유효하지 않은 리프레시 토큰입니다."),
 
     // User
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U001", "존재하지 않는 유저입니다.");
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U001", "존재하지 않는 유저입니다."),
+    USER_DELETED(HttpStatus.NOT_FOUND, "U002", "탈퇴 처리된 유저입니다.");
 
     private final HttpStatus status;
     private final String code;
