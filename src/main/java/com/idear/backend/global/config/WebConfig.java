@@ -1,13 +1,19 @@
 package com.idear.backend.global.config;
 
+import com.idear.backend.global.resolver.ValidatedUserArgumentResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
+
+    private final ValidatedUserArgumentResolver validatedUserArgumentResolver;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
@@ -17,5 +23,10 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedHeaders("*")
                 .exposedHeaders("*")
                 .allowCredentials(true);
+    }
+
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(validatedUserArgumentResolver);
     }
 }
