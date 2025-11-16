@@ -18,6 +18,11 @@ server:
   servlet:
     context-path: /api
 
+springdoc:
+  swagger-ui:
+    operations-sorter: alpha
+    tags-sorter: alpha
+
 cloud:
   aws:
     credentials:
