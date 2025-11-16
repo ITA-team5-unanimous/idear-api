@@ -34,9 +34,6 @@ public class AuthService {
         String newAccessToken = tokenProvider.generateAccessToken(userInfo);
         String newRefreshToken = tokenProvider.generateRefreshToken(userInfo);
 
-        return TokenResponse.builder()
-                .access(newAccessToken)
-                .refresh(newRefreshToken)
-                .build();
+        return TokenResponse.of(newAccessToken, newRefreshToken);
     }
 }
