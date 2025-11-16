@@ -1,9 +1,7 @@
 package com.idear.backend.global.security.oauth.service;
 
 import com.idear.backend.global.dto.UserInfo;
-import com.idear.backend.global.security.oauth.dto.CustomOAuth2User;
-import com.idear.backend.global.security.oauth.dto.KakaoResponse;
-import com.idear.backend.global.security.oauth.dto.OAuth2Response;
+import com.idear.backend.global.security.oauth.dto.*;
 import com.idear.backend.user.domain.User;
 import com.idear.backend.user.domain.UserRole;
 import com.idear.backend.user.infrastructure.repository.UserRepository;
@@ -34,6 +32,12 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         if (provider.equals("kakao")) {
             oAuth2Response = new KakaoResponse(attributes);
+        }
+        else if (provider.equals("naver")) {
+            oAuth2Response = new NaverResponse(attributes);
+        }
+        else if (provider.equals("google")) {
+            oAuth2Response = new GoogleResponse(attributes);
         }
         else {
             return null;
