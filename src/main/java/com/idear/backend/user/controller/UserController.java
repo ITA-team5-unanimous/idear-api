@@ -1,14 +1,14 @@
 package com.idear.backend.user.controller;
 
 import com.idear.backend.global.ApiResponse;
-import com.idear.backend.global.dto.UserInfo;
+import com.idear.backend.global.annotation.ValidatedUser;
 import com.idear.backend.user.application.service.UserService;
+import com.idear.backend.user.domain.User;
 import com.idear.backend.user.dto.request.UpdateNameRequest;
 import com.idear.backend.user.dto.response.UserInfoResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,26 +20,26 @@ public class UserController {
 
 	@GetMapping
 	public ResponseEntity<?> getUserInfo(
-		@AuthenticationPrincipal UserInfo userInfo
+		@ValidatedUser User user
 	) {
-		UserInfoResponse response = userService.getUserInfo(userInfo.id());
+		UserInfoResponse response = userService.getUserInfo(user);
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
 
 	@PatchMapping
 	public ResponseEntity<?> updateName(
-		@AuthenticationPrincipal UserInfo userInfo,
+		@ValidatedUser User user,
 		@Valid @RequestBody UpdateNameRequest request
 	) {
-		userService.updateName(userInfo.id(), request.getName());
+		userService.updateName(user, request.getName());
 		return ResponseEntity.ok(ApiResponse.success());
 	}
 
 	@DeleteMapping
 	public ResponseEntity<?> deleteUser(
-			@AuthenticationPrincipal UserInfo userInfo
+		@ValidatedUser User user
 	) {
-		userService.deleteUser(userInfo.id());
+		userService.deleteUser(user);
 		return ResponseEntity.ok(ApiResponse.success());
 	}
 }
