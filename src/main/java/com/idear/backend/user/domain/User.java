@@ -43,4 +43,16 @@ public class User {
                 .role(role)
                 .build();
     }
+
+    public String getProvider() {
+        return this.providerInfo.split("_")[0];
+    }
+
+    public void updateUsername(String name){
+        this.name = name;
+    }
+
+    public void deleteUser(){
+        this.deletedAt = LocalDateTime.now();
+    }
 }
