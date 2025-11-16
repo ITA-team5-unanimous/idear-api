@@ -41,8 +41,14 @@ public class SecurityConfig {
     private final String[] PUBLIC_GET = {
             "/",
             "/test/hello",
+
+            // OAuth2
             "/oauth2/authorization/**",
-            "/login/oauth2/code/**"
+            "/login/oauth2/code/**",
+
+            // Swagger UI
+            "/swagger-ui/**",
+            "/v3/api-docs/**"
     };
 
     private final String[] PUBLIC_PUT = {
