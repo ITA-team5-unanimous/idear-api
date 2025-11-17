@@ -13,6 +13,13 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
+  task:
+    scheduling:
+      enabled: true
+
+idear:
+  crawler:
+    enabled: true
 
 server:
   servlet:
