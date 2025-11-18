@@ -4,6 +4,7 @@ import com.idear.backend.auth.application.service.AuthService;
 import com.idear.backend.auth.dto.request.RefreshTokenRequest;
 import com.idear.backend.auth.dto.response.TokenResponse;
 import com.idear.backend.global.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,8 +20,8 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/reissue")
-    public ResponseEntity<?> reissue(@RequestBody RefreshTokenRequest request) {
-        TokenResponse tokenResponse = authService.reissue(request.refresh());
+    public ResponseEntity<?> reissue(@Valid @RequestBody RefreshTokenRequest request) {
+        TokenResponse tokenResponse = authService.reissue(request.getRefresh());
         ApiResponse<TokenResponse> response = ApiResponse.success(tokenResponse);
         return ResponseEntity.ok(response);
     }
