@@ -62,8 +62,6 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}
-
             CONTAINER_ID=$(sudo docker ps -aqf "name=^/idear-api$")
             if [ -n "$CONTAINER_ID" ]; then
               echo "Stopping existing container: $CONTAINER_ID"
@@ -72,6 +70,10 @@ jobs:
             else
               echo "No existing container to stop."
             fi
+
+            sudo docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }} || true
+
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}
 
             echo "Running the new container with image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}"
             sudo docker run --name idear-api -d -p 8080:8080 \
