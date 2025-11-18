@@ -4,7 +4,7 @@ FROM eclipse-temurin:21-jre
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
-    libasound2 \
+    libasound2t64 \
     libgbm1 \
     libnss3 \
     && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \
