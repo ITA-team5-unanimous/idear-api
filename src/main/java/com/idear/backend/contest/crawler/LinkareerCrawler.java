@@ -2,7 +2,6 @@ package com.idear.backend.contest.crawler;
 
 import com.idear.backend.contest.crawler.parser.LinkareerPageParser;
 import com.idear.backend.contest.crawler.service.ContestSaveService;
-import com.idear.backend.contest.domain.Contest;
 import com.idear.backend.contest.repository.ContestRepository;
 import com.idear.backend.global.exception.CustomException;
 import com.idear.backend.global.exception.ErrorCode;
@@ -12,7 +11,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +26,6 @@ public class LinkareerCrawler {
   private final ContestRepository contestRepository;
 
   private static final int MAX_PAGES = 3; // 크롤링할 최대 페이지 수(초기 백필용, 테스트 3페이지)
-  private static final int TOP_N_POPULAR = 10; // 인기 공모전 개수
 
   /**
    * 초기 백필 (최초 1회 실행)
@@ -87,10 +84,6 @@ public class LinkareerCrawler {
       int newCount = crawlNewContests();
       log.info("새 공모전 {}개 추가", newCount);
 
-      // 3. 인기 공모전 추출
-      List<Contest> popularContests = extractPopularContests();
-      log.info("인기 공모전 {}개 추출 완료", popularContests.size());
-
       log.info("=== 일일 업데이트 완료 ===");
 
     } catch (Exception e) {
@@ -144,62 +137,6 @@ public class LinkareerCrawler {
 
     log.info("=== 새 공모전 크롤링 완료 (총 {}개 저장) ===", totalSaved);
     return totalSaved;
-  }
-
-  /**
-   * 인기 공모전 추출 (최근 스크랩 증가 수 기준 상위 10개)
-   */
-  @Transactional(readOnly = true)
-  public List<Contest> extractPopularContests() {
-    log.info("=== 인기 공모전 추출 시작 ===");
-
-    try {
-      // 1. 정렬 기준을 '최근 스크랩 증가 수'로 변경
-      pageParser.changeOrderByRecentScrap();
-
-      // 2. 변경된 정렬 기준으로 첫 페이지의 URL 추출 (parseListPage 사용)
-      List<String> topUrls = pageParser.parseListPage(1);
-
-      // 상위 10개만 사용
-      if (topUrls.size() > TOP_N_POPULAR) {
-        topUrls = topUrls.subList(0, TOP_N_POPULAR);
-      }
-
-      log.info("상위 {}개 URL 추출 완료", topUrls.size());
-
-      // 3. DB에서 해당 URL의 Contest 조회
-      List<Contest> popularContests = new ArrayList<>();
-
-      for (String url : topUrls) {
-        try {
-          Contest contest = contestRepository.findByLinkareerUrl(url)
-            .orElseThrow(() -> CustomException.of(ErrorCode.CONTEST_NOT_FOUND));
-          popularContests.add(contest);
-          log.debug("인기 공모전: {}", contest.getTitle());
-        } catch (Exception e) {
-          log.warn("DB에서 찾을 수 없는 URL (스킵): {}", url);
-          // 찾지 못해도 계속 진행
-        }
-      }
-
-      // 4. 정렬 기준을 다시 '최신순'으로 복원
-      pageParser.changeOrderByLatest();
-
-      log.info("=== 인기 공모전 추출 완료 ({}개) ===", popularContests.size());
-      return popularContests;
-
-    } catch (Exception e) {
-      log.error("인기 공모전 추출 실패", e);
-
-      // 실패해도 정렬 기준은 복원 시도
-      try {
-        pageParser.changeOrderByLatest();
-      } catch (Exception ex) {
-        log.error("정렬 기준 복원 실패", ex);
-      }
-
-      return new ArrayList<>();
-    }
   }
 
   /**
