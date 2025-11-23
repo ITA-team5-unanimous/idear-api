@@ -32,6 +32,6 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         UserInfo userInfo = oauth2User.getUserInfo();
         String refreshToken = tokenProvider.generateRefreshToken(userInfo);
 
-        response.sendRedirect(frontDomain+"?refresh="+refreshToken);
+        response.sendRedirect(frontDomain+"/oauth2/success?refresh="+refreshToken);
     }
 }
