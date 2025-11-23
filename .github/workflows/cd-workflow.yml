@@ -91,6 +91,12 @@ jobs:
                  -e KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} \
                  -e KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }} \
                  -e KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }} \
+                 -e NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }} \
+                 -e NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }} \
+                 -e NAVER_REDIRECT_URI=${{ secrets.NAVER_REDIRECT_URI }} \
+                 -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
+                 -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
+                 -e GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }} \
                  ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}
 
             sudo docker system prune -a -f
