@@ -49,9 +49,8 @@ public class LinkareerCrawlScheduler {
    * 매일 오전 12시에 일일 업데이트 실행
    * 1. 마감된 공모전 삭제
    * 2. 새 공모전 추가
-   * 3. 인기 공모전 추출
    */
-  @Scheduled(cron = "0 * * * * *")
+  @Scheduled(cron = "0 0 0 * * *")
   public void scheduledDailyUpdate() {
     // 초기 백필이 완료되지 않았으면 스킵
     if (!initialBackfillCompleted.get()) {
