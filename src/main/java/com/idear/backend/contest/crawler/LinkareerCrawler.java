@@ -15,6 +15,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * 개발 세미나용 코드 리뷰 주석
+ * - Linkareer 공모전 크롤러
+ * - 초기 백필 및 일일 업데이트 기능 포함
+ */
 @ConditionalOnProperty(name = "idear.crawler.enabled", havingValue = "true")
 @Slf4j
 @Service
@@ -29,7 +34,7 @@ public class LinkareerCrawler {
     LinkareerPageParser pageParser,
     ContestSaveService saveService,
     ContestRepository contestRepository,
-    @Lazy LinkareerCrawler self
+    @Lazy LinkareerCrawler self // 자기 자신을 주입하기 위해 @Lazy 사용
   ) {
     this.pageParser = pageParser;
     this.saveService = saveService;

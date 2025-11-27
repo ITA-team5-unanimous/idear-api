@@ -21,6 +21,8 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      # 개발 세미나용 주석 CD workflow
+      # 셀레니움을 이용하기 위한 크롬 설치
       - name: Install Chrome
         run: |
           set -ex

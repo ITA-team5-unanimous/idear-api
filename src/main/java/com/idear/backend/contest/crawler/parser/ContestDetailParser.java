@@ -20,7 +20,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 /**
- * 공모전 상세 페이지 파싱
+ * 개발 세미나용 코드 리뷰 주석
+ * - 각 공모전 상세 페이지 파싱
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -31,6 +32,7 @@ public class ContestDetailParser {
 
   /**
    * 상세 페이지 크롤링
+   * - 셀레니움으로 상세 페이지 로드 후 JSoup으로 파싱
    */
   public Contest parseDetailPage(String linkareerUrl) {
     try {
@@ -82,6 +84,7 @@ public class ContestDetailParser {
 
   /**
    * 홈페이지 URL 추출
+   * - dt-dd 구조에서 "홈페이지" 필드 찾기
    */
   private String getHomepageUrl(Document doc) {
     try {
@@ -108,6 +111,7 @@ public class ContestDetailParser {
 
   /**
    * 접수기간에서 시작일과 마감일 추출
+   * - dt-dd 구조에서 "접수기간" 필드 찾기
    */
   private LocalDate[] parseDateRange(Document doc) {
     LocalDate startDate = null;
@@ -152,6 +156,7 @@ public class ContestDetailParser {
 
   /**
    * dt-dd 구조에서 특정 필드값 추출
+   * - fieldLabel: "홈페이지", "접수기간" 등
    */
   private String getFieldValue(Document doc, String fieldLabel) {
     Elements dls = doc.select("dl");
@@ -167,6 +172,7 @@ public class ContestDetailParser {
 
   /**
    * 안전한 요소 추출
+   * - 요소가 없으면 null 반환
    */
   private String getTextSafely(Document doc, String selector) {
     Element element = doc.selectFirst(selector);
@@ -180,6 +186,7 @@ public class ContestDetailParser {
 
   /**
    * HTML 태그 제거하되 줄바꿈 유지
+   * - 상세 설명을 추출할 때 태그까지 같이 크롤링 되는 문제 해결
    */
   private String getDescriptionText(Document doc, String selector) {
     Element element = doc.selectFirst(selector);

@@ -14,6 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * 개발 세미나용 코드 리뷰 주석
+ * - 공모전 저장 서비스
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Service

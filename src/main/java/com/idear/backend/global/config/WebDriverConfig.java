@@ -10,7 +10,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * WebDriver 설정
+ * 개발 세미나용 주석
+ * - WebDriverManager를 사용하여 ChromeDriver 설정
  */
 @Slf4j
 @Configuration

@@ -19,6 +19,10 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.util.*;
 
+/**
+ * 개발 세미나용 코드 리뷰 주석
+ * - Linkareer 공모전 목록 페이지 파싱
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -28,6 +32,11 @@ public class LinkareerPageParser {
 
   private static final String BASE_URL = "https://linkareer.com";
 
+  /**
+   * 목록 페이지 크롤링
+   * - 셀레니움으로 목록 페이지 로드 후 JSoup으로 상세 페이지 url을 파싱
+   * - 페이지네이션 처리 포함
+   */
   public List<String> parseListPage(int page) {
     try {
       log.info("{}페이지 로드 시작", page);
@@ -83,6 +92,7 @@ public class LinkareerPageParser {
     }
   }
 
+  // 목록 페이지 URL 빌드
   private String buildListUrl(int page) {
     return BASE_URL +
       "/list/contest" +

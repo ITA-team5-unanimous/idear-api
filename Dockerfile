@@ -1,6 +1,7 @@
 FROM eclipse-temurin:21-jre
 
-# Chrome 및 ChromeDriver 설치에 필요한 패키지들
+# 개발 세미나용 주석
+# 셀레니움을 이용하기 위한 Chrome 및 ChromeDriver 설치에 필요한 패키지들
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \

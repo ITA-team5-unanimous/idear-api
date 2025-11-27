@@ -8,6 +8,10 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+/**
+ * 개발 세미나용 코드 리뷰 주석
+ * - Linkareer 크롤링 스케줄러
+ */
 @ConditionalOnProperty(name = "idear.crawler.enabled", havingValue = "true")
 @Slf4j
 @Component
