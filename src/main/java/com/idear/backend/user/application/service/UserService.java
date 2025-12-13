@@ -21,6 +21,11 @@ public class UserService {
     }
 
     @Transactional
+    public void registerPublicKey(User user, String publicKey) {
+        user.registerPublicKey(publicKey);
+    }
+
+    @Transactional
     public void deleteUser(User user) {
         user.deleteUser();
     }

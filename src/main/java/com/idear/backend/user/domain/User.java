@@ -33,6 +33,9 @@ public class User {
     @Column(nullable = false)
     private UserRole role;
 
+    @Column(length = 500)
+    private String publicKey;
+
     private LocalDateTime deletedAt;
 
     public static User of(String name, String email, String providerInfo, UserRole role){
@@ -50,6 +53,10 @@ public class User {
 
     public void updateUsername(String name){
         this.name = name;
+    }
+
+    public void registerPublicKey(String publicKey) {
+        this.publicKey = publicKey;
     }
 
     public void deleteUser(){
