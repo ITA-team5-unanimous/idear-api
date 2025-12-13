@@ -52,7 +52,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 .orElseGet(() -> userRepository.save(User.of(name, email, providerInfo, UserRole.USER)));
 
         UserInfo userInfo = UserInfo.builder()
-                .id(user.getId())
+                .id(user.getUserId())
                 .name(user.getName())
                 .email(user.getEmail())
                 .providerInfo(user.getProviderInfo())
