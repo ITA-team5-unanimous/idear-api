@@ -15,11 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "ideas")
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@SQLDelete(sql = "UPDATE idea SET deleted_at = NOW() WHERE idea_id = ?")
+@SQLDelete(sql = "UPDATE ideas SET deleted_at = NOW() WHERE idea_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 public class Idea {
 

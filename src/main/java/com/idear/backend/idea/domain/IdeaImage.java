@@ -12,11 +12,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Table(name = "idea_images")
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@SQLDelete(sql = "UPDATE idea_image SET deleted_at = NOW() WHERE idea_image_id = ?")
+@SQLDelete(sql = "UPDATE idea_images SET deleted_at = NOW() WHERE idea_image_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 public class IdeaImage {
 

@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@SQLDelete(sql = "UPDATE user SET deleted_at = NOW() WHERE user_id = ?")
+@SQLDelete(sql = "UPDATE users SET deleted_at = NOW() WHERE user_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 public class User {
 
