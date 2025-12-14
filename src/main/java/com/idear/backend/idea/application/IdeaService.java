@@ -1,106 +1,244 @@
 package com.idear.backend.idea.application;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
+import com.idear.backend.contest.domain.Contest;
+import com.idear.backend.contest.repository.ContestRepository;
 import com.idear.backend.global.exception.CustomException;
 import com.idear.backend.global.exception.ErrorCode;
 import com.idear.backend.idea.domain.Idea;
 import com.idear.backend.idea.domain.IdeaFile;
-import com.idear.backend.idea.dto.request.IdeaRegisterRequest;
-import com.idear.backend.idea.dto.response.IdeaResponse;
+import com.idear.backend.idea.domain.IdeaImage;
+import com.idear.backend.idea.dto.request.FileSignatureRequest;
+import com.idear.backend.idea.dto.request.IdeaCreateRequest;
+import com.idear.backend.idea.dto.request.SignatureData;
+import com.idear.backend.idea.dto.response.*;
+import com.idear.backend.idea.infrastructure.repository.IdeaFileRepository;
+import com.idear.backend.idea.infrastructure.repository.IdeaImageRepository;
 import com.idear.backend.idea.infrastructure.repository.IdeaRepository;
+import com.idear.backend.idea.util.HashUtil;
 import com.idear.backend.user.domain.User;
-import com.idear.backend.user.infrastructure.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class IdeaService {
 
 	private final IdeaRepository ideaRepository;
+	private final IdeaFileRepository ideaFileRepository;
+	private final IdeaImageRepository ideaImageRepository;
 	private final FileStorageService fileStorageService;
-	private final UserRepository userRepository;
+	private final ContestRepository contestRepository;
+	private final HashUtil hashUtil;
 
 	@Transactional
-	public void registerIdea(IdeaRegisterRequest ideaRegisterRequest, List<MultipartFile> files) throws IOException {
-		User user = userRepository.findById(ideaRegisterRequest.getUserId())
-			.orElseThrow(() -> CustomException.of(ErrorCode.USER_NOT_FOUND));
-		Idea idea = Idea.registerIdea(
-			user, ideaRegisterRequest.getTitle(), ideaRegisterRequest.getShortDescription(), ideaRegisterRequest.getDescription()
+	public IdeaRegistrationInitResponse initIdeaRegistration(
+		User user,
+		IdeaCreateRequest request,
+		List<MultipartFile> images,
+		List<MultipartFile> files
+	) throws IOException {
+		Contest contest = null;
+		if (request.getContestId() != null) {
+			contest = contestRepository.findById(request.getContestId())
+					.orElseThrow(() -> CustomException.of(ErrorCode.CONTEST_NOT_FOUND));
+		}
+
+		LocalDateTime requestedAt = LocalDateTime.now();
+		Long requestTimestamp = requestedAt.toEpochSecond(ZoneOffset.UTC);
+
+		Idea idea = Idea.register(
+				user,
+				contest,
+				request.getTitle(),
+				request.getShortDescription(),
+				request.getDescription(),
+				requestedAt
 		);
 		ideaRepository.save(idea);
 
-		List<IdeaFile> ideaFiles = new ArrayList<>();
-		if (files != null && !files.isEmpty()) {
-			for (MultipartFile file : files) {
-				if (!file.isEmpty()) {
-					String fileName = UUID.randomUUID().toString();
-					String dir = parseExtension(file);
-					IdeaFile.FileType fileType = dir.equals("image") ? IdeaFile.FileType.IMAGE : IdeaFile.FileType.FILE;
-					String url = fileStorageService.uploadFile(file, fileName, dir);
-					IdeaFile ideaFile = IdeaFile.registerIdeaFile(idea, file.getOriginalFilename(), fileName, url, fileType);
-					ideaFiles.add(ideaFile);
-				}
-			}
-		}
+		processImages(idea, images);
+		List<FileHashInfo> fileHashInfoList = processFiles(idea, files, requestTimestamp);
 
-		if(!ideaFiles.isEmpty()){
-			idea.addFile(ideaFiles);
-		}
-
-		//TODO blockchain 등록, hash 저장, 완료 후 status 변경
-		// blockchain.prove();
+		return IdeaRegistrationInitResponse.builder()
+				.ideaId(idea.getIdeaId())
+				.requestedAt(requestedAt)
+				.files(fileHashInfoList)
+				.build();
 	}
 
 	@Transactional
-	public void deleteIdea(Long ideaId) {
+	public IdeaRegistrationCompleteResponse submitSignatures(
+		User user,
+		Long ideaId,
+		FileSignatureRequest request
+	) {
 		Idea idea = ideaRepository.findById(ideaId)
-			.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
+				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
 
-		List<IdeaFile> files = idea.getFiles();
-		for(IdeaFile ideaFile : files){
-			String dir = ideaFile.getFileType() == IdeaFile.FileType.IMAGE ? "image" : "file";
-			fileStorageService.deleteFile(ideaFile.getFileName(), dir);
+		if (!idea.getUser().getUserId().equals(user.getUserId())) {
+			throw CustomException.of(ErrorCode.UNAUTHORIZED);
 		}
 
-		ideaRepository.delete(idea);
+		List<FileRegistrationResult> registrationResults = new ArrayList<>();
+
+		for (SignatureData signatureData : request.getSignatures()) {
+			IdeaFile ideaFile = ideaFileRepository.findById(signatureData.getIdeaFileId())
+					.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_FILE_NOT_FOUND));
+
+			if (!ideaFile.getIdea().getIdeaId().equals(ideaId)) {
+				throw CustomException.of(ErrorCode.UNAUTHORIZED);
+			}
+
+			String serverSignature = hashUtil.generateServerSignature(
+					signatureData.getUserSignature(),
+					ideaFile.getCommit(),
+					ideaFile.getRequestedTimestamp()
+			);
+
+			ideaFile.submitUserSignature(signatureData.getUserSignature(), serverSignature);
+
+			/* TODO BlockchainGatewayService 구현 및 호출
+			blockchainGatewayService.requestCommitRegistration(
+					ideaFile.getCommit(),
+					ideaFile.getRequestedTimestamp(),
+					serverSignature
+			);
+			*/
+
+			registrationResults.add(FileRegistrationResult.builder()
+					.ideaFileId(ideaFile.getIdeaFileId())
+					.fileName(ideaFile.getOriginalFileName())
+					.fileHash(ideaFile.getFileHash())
+					.salt(ideaFile.getSalt())
+					.commit(ideaFile.getCommit())
+					.build());
+		}
+
+		return IdeaRegistrationCompleteResponse.builder()
+				.ideaId(ideaId)
+				.registeredFiles(registrationResults)
+				.totalFiles(registrationResults.size())
+				.build();
 	}
 
 	@Transactional(readOnly = true)
-	public List<IdeaResponse> getIdeasByUser(Long userId) {
-		User user = userRepository.findById(userId)
-			.orElseThrow(() -> CustomException.of(ErrorCode.USER_NOT_FOUND));
+	public List<IdeaSummaryResponse> getIdeasByUser(User user) {
 		List<Idea> ideas = ideaRepository.findAllByUser(user);
 
-		List<IdeaResponse> responses = ideas.stream()
-			.map(IdeaResponse::of).collect(Collectors.toList());
-
-		return responses;
+		return ideas.stream()
+				.map(IdeaSummaryResponse::of)
+				.collect(Collectors.toList());
 	}
 
+	@Transactional(readOnly = true)
+	public IdeaDetailResponse getIdeaDetail(User user, Long ideaId) {
+		Idea idea = ideaRepository.findById(ideaId)
+			.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
 
-	private String parseExtension(MultipartFile file) {
-		List<String> imageExtensions = List.of("jpg", "jpeg", "png", "gif", "bmp", "webp", "heic");
-
-		String originalFilename = file.getOriginalFilename();
-		String fileExtension = "";
-		if (originalFilename != null && originalFilename.contains(".")) {
-			fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase();
+		if (!idea.getUser().getUserId().equals(user.getUserId())) {
+			throw CustomException.of(ErrorCode.ACCESS_DENIED);
 		}
 
-		boolean isImage = imageExtensions.contains(fileExtension);
+		return IdeaDetailResponse.of(idea);
+	}
 
-		String resolvedUploadDir = isImage ? "image" : "file";
+	@Transactional
+	public void deleteIdea(User user, Long ideaId) {
+		Idea idea = ideaRepository.findById(ideaId)
+			.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
 
-		return resolvedUploadDir;
+		if (!idea.getUser().getUserId().equals(user.getUserId())) {
+			throw CustomException.of(ErrorCode.ACCESS_DENIED);
+		}
+
+		deleteIdeaFilesFromStorage(idea.getFiles());
+		deleteIdeaImagesFromStorage(idea.getImages());
+
+		ideaFileRepository.deleteAll(idea.getFiles());
+		ideaImageRepository.deleteAll(idea.getImages());
+		ideaRepository.delete(idea);
+	}
+
+	private void processImages(Idea idea, List<MultipartFile> images) throws IOException {
+		if (images == null || images.isEmpty()) {
+			return;
+		}
+
+		for (MultipartFile image : images) {
+			if (!image.isEmpty()) {
+				String fileName = UUID.randomUUID().toString();
+				String filePath = fileStorageService.uploadFile(image, fileName, "image");
+
+				IdeaImage ideaImage = IdeaImage.of(
+						image.getOriginalFilename(),
+						fileName,
+						filePath
+				);
+
+				idea.addImage(ideaImage);
+			}
+		}
+	}
+
+	private List<FileHashInfo> processFiles(Idea idea, List<MultipartFile> files, Long requestTimestamp) throws IOException {
+		List<FileHashInfo> fileHashInfoList = new ArrayList<>();
+
+		if (files == null || files.isEmpty()) {
+			return fileHashInfoList;
+		}
+
+		for (MultipartFile file : files) {
+			if (!file.isEmpty()) {
+				String fileName = UUID.randomUUID().toString();
+				String filePath = fileStorageService.uploadFile(file, fileName, "file");
+
+				String fileHash = hashUtil.generateFileHash(file);
+				String salt = hashUtil.generateSalt();
+				String commit = hashUtil.generateCommit(fileHash, salt);
+
+				IdeaFile ideaFile = IdeaFile.initialize(
+						file.getOriginalFilename(),
+						fileName,
+						filePath,
+						fileHash,
+						salt,
+						commit,
+						requestTimestamp
+				);
+
+				idea.addFile(ideaFile);
+
+				fileHashInfoList.add(FileHashInfo.builder()
+						.ideaFileId(ideaFile.getIdeaFileId())
+						.fileName(file.getOriginalFilename())
+						.fileHash(fileHash)
+						.timestamp(requestTimestamp)
+						.build());
+			}
+		}
+
+		return fileHashInfoList;
+	}
+
+	private void deleteIdeaFilesFromStorage(List<IdeaFile> files) {
+		for (IdeaFile file : files) {
+			fileStorageService.deleteFile(file.getFileName(), "file");
+		}
+	}
+
+	private void deleteIdeaImagesFromStorage(List<IdeaImage> images) {
+		for (IdeaImage image : images) {
+			fileStorageService.deleteFile(image.getFileName(), "image");
+		}
 	}
 }

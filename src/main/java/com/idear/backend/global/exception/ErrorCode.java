@@ -29,6 +29,8 @@ public enum ErrorCode {
     FILE_NOTFOUND_ERROR(HttpStatus.NOT_FOUND, "F002", "존재하지 않는 파일입니다."),
     FILE_DELETE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "F003", "파일 삭제를 실패했습니다."),
     IDEA_NOT_FOUND(HttpStatus.NOT_FOUND, "I001", "존재하지 않는 아이디어 입니다."),
+    IDEA_FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "I002", "존재하지 않는 아이디어 파일입니다."),
+    IDEA_FILE_STATUS_MISMATCH(HttpStatus.CONFLICT, "I003", "아이디어 파일의 현재 상태가 요청과 일치하지 않습니다."),
 
     // Crawling
     CRAWLING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "C001", "크롤링 중 오류가 발생했습니다."),
