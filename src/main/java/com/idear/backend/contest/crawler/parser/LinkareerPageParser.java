@@ -32,7 +32,7 @@ public class LinkareerPageParser {
     try {
       log.info("{}페이지 로드 시작", page);
 
-      WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+      WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
       // 첫 페이지는 URL로 직접 이동
       if (page == 1) {
@@ -74,9 +74,6 @@ public class LinkareerPageParser {
         log.info("목록 페이지 복귀 완료, {}페이지 버튼 클릭 시도", page);
         clickPaginationButton(page);
       }
-
-      // 스크롤을 여러 번 시도
-      scrollToBottomMultipleTimes();
 
       return extractUrls(page);
 
@@ -151,70 +148,6 @@ public class LinkareerPageParser {
     } catch (Exception e) {
       log.error("페이지네이션 버튼 클릭 실패", e);
       throw CustomException.of(ErrorCode.PAGE_PARSING_FAILED, "페이지 이동 실패: " + targetPage);
-    }
-  }
-
-  /**
-   * 여러 번 스크롤 시도 (동적 로딩 대응)
-   */
-  private void scrollToBottomMultipleTimes() {
-    try {
-      JavascriptExecutor js = (JavascriptExecutor) driver;
-      WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
-
-      // 총 2번 스크롤 시도
-      for (int round = 0; round < 2; round++) {
-        log.debug("스크롤 라운드 {}/2", round + 1);
-
-        Long lastHeight = (Long) js.executeScript("return document.body.scrollHeight");
-
-        // 천천히 스크롤 다운
-        for (int i = 0; i < 5; i++) {
-          js.executeScript("window.scrollBy(0, 500);");
-
-          // 각 스크롤 후 짧은 대기 (DOM 업데이트 시간 확보)
-          try {
-            wait.until(driver ->
-              (Long) js.executeScript("return document.readyState === 'complete'")
-            );
-          } catch (Exception e) {
-            // readyState 체크 실패해도 계속 진행
-          }
-        }
-
-        // 맨 아래로
-        js.executeScript("window.scrollTo(0, document.body.scrollHeight);");
-
-        // 새 콘텐츠 로딩 대기 (높이 변화 또는 타임아웃)
-        try {
-          wait.until(driver -> {
-            Long newHeight = (Long) js.executeScript("return document.body.scrollHeight");
-            return !newHeight.equals(lastHeight);
-          });
-        } catch (Exception e) {
-          // 높이 변화 없으면 다음 라운드로
-        }
-
-        Long newHeight = (Long) js.executeScript("return document.body.scrollHeight");
-
-        log.debug("높이 변화: {} → {}", lastHeight, newHeight);
-
-        if (newHeight.equals(lastHeight)) {
-          log.debug("더 이상 콘텐츠가 로드되지 않음, 스크롤 종료");
-          break;
-        }
-      }
-
-      // 맨 위로 스크롤 (전체 콘텐츠 확인용)
-      js.executeScript("window.scrollTo(0, 0);");
-
-      // 다시 맨 아래로
-      js.executeScript("window.scrollTo(0, document.body.scrollHeight);");
-
-      log.debug("스크롤 완료");
-
-    } catch (Exception e) {
-      log.warn("스크롤 중 오류 발생", e);
     }
   }
 
