@@ -42,7 +42,7 @@ public class ContestController {
     @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
     @ValidatedUser User user
   ) {
-    Page<ContestListResponse> response = contestService.searchContests(keyword, pageable, user.getId());
+    Page<ContestListResponse> response = contestService.searchContests(keyword, pageable, user.getUserId());
     return ResponseEntity.ok(ApiResponse.success(response));
   }
 
@@ -58,7 +58,7 @@ public class ContestController {
     @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
     @ValidatedUser User user
   ) {
-    Page<ContestListResponse> response = contestService.getContests(sortBy, pageable, user.getId());
+    Page<ContestListResponse> response = contestService.getContests(sortBy, pageable, user.getUserId());
     return ResponseEntity.ok(ApiResponse.success(response));
   }
 
@@ -71,7 +71,7 @@ public class ContestController {
     @PathVariable Long contestId,
     @ValidatedUser User user
   ) {
-    ContestDetailResponse response = contestService.getContestDetail(contestId, user.getId());
+    ContestDetailResponse response = contestService.getContestDetail(contestId, user.getUserId());
     return ResponseEntity.ok(ApiResponse.success(response));
   }
 
@@ -96,7 +96,7 @@ public class ContestController {
     @ValidatedUser User user,
     @PageableDefault(size = 20) Pageable pageable
   ) {
-    Page<ContestListResponse> response = contestService.getBookmarkedContests(user.getId(), pageable);
+    Page<ContestListResponse> response = contestService.getBookmarkedContests(user.getUserId(), pageable);
     return ResponseEntity.ok(ApiResponse.success(response));
   }
 
@@ -109,7 +109,7 @@ public class ContestController {
     @PathVariable Long contestId,
     @ValidatedUser User user
   ) {
-    contestService.bookmarkContest(contestId, user.getId());
+    contestService.bookmarkContest(contestId, user.getUserId());
     return ResponseEntity.ok(ApiResponse.success());
   }
 
@@ -122,7 +122,7 @@ public class ContestController {
     @PathVariable Long contestId,
     @ValidatedUser User user
   ) {
-    contestService.unbookmarkContest(contestId, user.getId());
+    contestService.unbookmarkContest(contestId, user.getUserId());
     return ResponseEntity.ok(ApiResponse.success());
   }
 }

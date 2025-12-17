@@ -4,10 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 @Getter
-public class IdeaRegisterRequest {
-	@NotNull
-	private Long userId;
-	@NotNull
+public class IdeaCreateRequest {
 	private Long contestId;
 	@NotNull
 	private String title;
