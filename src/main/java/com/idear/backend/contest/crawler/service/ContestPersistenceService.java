@@ -11,13 +11,13 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
-// ContestPersistenceService.java (새로 생성)
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class ContestPersistenceService {
 
   private final ContestRepository contestRepository;
+  private final ContestBatchSaver batchSaver;
 
   @Transactional
   public boolean saveIfNotDuplicate(Contest contest, String url, Set<String> processedUrls) {
@@ -32,29 +32,24 @@ public class ContestPersistenceService {
     return true;
   }
 
-  @Transactional
+  /**
+   * 배치 저장 with 폴백 로직
+   */
   public int saveBatchWithRetry(List<Contest> contestBatch) {
+    if (contestBatch.isEmpty()) {
+      return 0;
+    }
+
     try {
-      contestRepository.saveAll(contestBatch);
+      // 1차 시도: JDBC Batch Insert
+      batchSaver.saveAllInBatch(contestBatch);
       log.info("배치 저장 완료: {}건", contestBatch.size());
       return contestBatch.size();
     } catch (Exception e) {
       log.error("배치 저장 실패, 개별 저장으로 폴백", e);
-      return saveIndividually(contestBatch);
+      // 2차 시도: 개별 저장 (새 트랜잭션에서 실행)
+      return batchSaver.saveIndividually(contestBatch);
     }
-  }
-
-  private int saveIndividually(List<Contest> contests) {
-    int saved = 0;
-    for (Contest contest : contests) {
-      try {
-        contestRepository.save(contest);
-        saved++;
-      } catch (Exception e) {
-        log.error("개별 저장 실패: {}", contest.getTitle(), e);
-      }
-    }
-    return saved;
   }
 
   @Transactional
