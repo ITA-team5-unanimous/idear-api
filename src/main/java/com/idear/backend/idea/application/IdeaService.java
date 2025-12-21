@@ -64,7 +64,7 @@ public class IdeaService {
 				request.getDescription(),
 				requestedAt
 		);
-		ideaRepository.save(idea);
+		idea = ideaRepository.save(idea);
 
 		processImages(idea, images);
 		List<FileHashInfo> fileHashInfoList = processFiles(idea, files, requestTimestamp);
@@ -217,6 +217,7 @@ public class IdeaService {
 				);
 
 				idea.addFile(ideaFile);
+				ideaFile = ideaFileRepository.save(ideaFile);
 
 				fileHashInfoList.add(FileHashInfo.builder()
 						.ideaFileId(ideaFile.getIdeaFileId())
