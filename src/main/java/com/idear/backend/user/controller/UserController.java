@@ -36,10 +36,10 @@ public class UserController {
 	}
 
 	@Operation(
-		summary = "이름 수정",
-		description = "현재 로그인한 사용자의 이름을 수정합니다."
+		summary = "이름 변경",
+		description = "현재 로그인한 사용자의 이름을 변경합니다."
 	)
-	@PatchMapping
+	@PatchMapping("/name")
 	public ResponseEntity<?> updateName(
 		@Parameter(hidden = true) @ValidatedUser User user,
 		@Valid @RequestBody UpdateNameRequest request
