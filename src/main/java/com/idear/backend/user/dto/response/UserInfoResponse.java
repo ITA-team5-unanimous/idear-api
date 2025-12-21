@@ -10,12 +10,14 @@ public class UserInfoResponse {
 	private String name;
 	private String email;
 	private String provider;
+	private String publicKey;
 
 	public static UserInfoResponse from(User user) {
 		return UserInfoResponse.builder()
 				.name(user.getName())
 				.email(user.getEmail())
 				.provider(user.getProvider())
+				.publicKey(user.getPublicKey())
 				.build();
 	}
 }
