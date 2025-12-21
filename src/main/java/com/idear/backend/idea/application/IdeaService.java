@@ -86,7 +86,7 @@ public class IdeaService {
 				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
 
 		if (!idea.getUser().getUserId().equals(user.getUserId())) {
-			throw CustomException.of(ErrorCode.UNAUTHORIZED);
+			throw CustomException.of(ErrorCode.USER_NOT_OWNER);
 		}
 
 		List<FileRegistrationResult> registrationResults = new ArrayList<>();
@@ -96,7 +96,7 @@ public class IdeaService {
 					.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_FILE_NOT_FOUND));
 
 			if (!ideaFile.getIdea().getIdeaId().equals(ideaId)) {
-				throw CustomException.of(ErrorCode.UNAUTHORIZED);
+				throw CustomException.of(ErrorCode.IDEA_FILE_IDEA_MISMATCH);
 			}
 
 			String serverSignature = hashUtil.generateServerSignature(
