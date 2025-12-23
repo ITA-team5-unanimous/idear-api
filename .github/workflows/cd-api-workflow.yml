@@ -71,6 +71,7 @@ jobs:
             echo "Running the new container with image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}"
             sudo docker run --name idear-api -d -p 8080:8080 \
                  -e SPRING_PROFILES_ACTIVE=prod \
+                 -e IDEAR_CRAWLER_ENABLED=false \
                  -e PROD_MYSQL_URL=${{ secrets.PROD_MYSQL_URL }} \
                  -e PROD_MYSQL_USER=${{ secrets.PROD_MYSQL_USER }} \
                  -e PROD_MYSQL_PASSWORD=${{ secrets.PROD_MYSQL_PASSWORD }} \
