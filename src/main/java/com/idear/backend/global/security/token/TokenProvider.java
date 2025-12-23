@@ -97,9 +97,7 @@ public class TokenProvider {
             new SimpleGrantedAuthority(role.toRoleString())
         );
 
-        UserInfo userInfo = UserInfo.builder()
-            .id(userId)
-            .build();
+        UserInfo userInfo = new UserInfo(userId, null, null, null, role);
 
         return new UsernamePasswordAuthenticationToken(userInfo, null, authorities);
     }
