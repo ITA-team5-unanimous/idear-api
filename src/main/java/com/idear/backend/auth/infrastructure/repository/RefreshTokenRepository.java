@@ -10,6 +10,8 @@ import java.time.Duration;
 @Repository
 public class RefreshTokenRepository {
 
+    private static final String REFRESH_TOKEN_PREFIX = "api:refresh:";
+
     @Value("${secret.jwt.refresh.expiration}")
     long refreshTokenExpiration;
 
@@ -20,20 +22,21 @@ public class RefreshTokenRepository {
     }
 
     public void saveRefreshToken(String refreshToken, UserInfo userInfo) {
-        redisTemplate.opsForValue().set(refreshToken, userInfo);
+        String key = REFRESH_TOKEN_PREFIX + refreshToken;
+        redisTemplate.opsForValue().set(key, userInfo);
         Duration duration = Duration.ofMillis(refreshTokenExpiration);
-        redisTemplate.expire(refreshToken, duration);
+        redisTemplate.expire(key, duration);
     }
 
     public UserInfo getUserInfo(String refreshToken) {
-        return (UserInfo) redisTemplate.opsForValue().get(refreshToken);
+        return (UserInfo) redisTemplate.opsForValue().get(REFRESH_TOKEN_PREFIX + refreshToken);
     }
 
     public boolean existsByRefresh(String refresh) {
-        return redisTemplate.hasKey(refresh);
+        return redisTemplate.hasKey(REFRESH_TOKEN_PREFIX + refresh);
     }
 
     public void deleteByRefresh(String refresh) {
-        redisTemplate.delete(refresh);
+        redisTemplate.delete(REFRESH_TOKEN_PREFIX + refresh);
     }
 }
