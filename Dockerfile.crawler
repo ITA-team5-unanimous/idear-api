@@ -18,8 +18,5 @@ ARG JAR_FILE=build/libs/*.jar
 
 COPY ${JAR_FILE} app.jar
 
-# 크롤러 전용 설정 파일 복사
-COPY src/main/resources/application-crawler.yml /app/config/application-crawler.yml
-
 # 크롤러 프로필로 실행
 ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=crawler", "app.jar"]
