@@ -27,7 +27,7 @@ public class LinkareerCrawler {
   private final ContestRepository contestRepository;
   private final ContestPersistenceService contestPersistenceService;
 
-  private static final int MAX_PAGES = 3; // 크롤링할 최대 페이지 수 (초기 백필용)
+  private static final int MAX_PAGES = 2; // 크롤링할 최대 페이지 수 (초기 백필용)
 
   /**
    * 초기 백필 (최초 1회 실행)

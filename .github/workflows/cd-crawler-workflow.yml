@@ -34,7 +34,6 @@ jobs:
           sudo apt install -y ./google-chrome-stable_current_amd64.deb
 
       - name: Grant execute permission to gradlew
-        shell: bash
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
@@ -55,10 +54,8 @@ jobs:
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/idear-crawler
 
   deploy-crawler-to-ec2:
-    if: github.event_name == 'push'
     needs: build-and-push-crawler-image
     runs-on: ubuntu-latest
-
     steps:
       - name: Deploy Crawler to EC2
         uses: appleboy/ssh-action@master
@@ -67,28 +64,26 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" -p "${{ secrets.DOCKERHUB_PASSWORD }}"
-            
             CONTAINER_ID=$(sudo docker ps -aqf "name=^/idear-crawler$")
             if [ -n "$CONTAINER_ID" ]; then
-              echo "Stopping existing crawler container: $CONTAINER_ID"
               sudo docker stop $CONTAINER_ID
               sudo docker rm $CONTAINER_ID
-            else
-              echo "No existing crawler container to stop."
             fi
 
             sudo docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/idear-crawler || true
-
+            
+            sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" -p "${{ secrets.DOCKERHUB_PASSWORD }}"
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/idear-crawler:latest
 
-            echo "Running the new crawler container"
             sudo docker run --name idear-crawler -d \
               --restart unless-stopped \
-              --memory="800m" \
-              --memory-swap="1g" \
+              --memory="500m" \
+              --memory-swap="500m" \
               --cpus="0.5" \
               --shm-size="256m" \
+              --log-driver json-file \
+              --log-opt max-size=10m \
+              --log-opt max-file=3 \
               -e SPRING_PROFILES_ACTIVE=crawler \
               -e PROD_MYSQL_URL='${{ secrets.PROD_MYSQL_URL }}' \
               -e PROD_MYSQL_USER='${{ secrets.PROD_MYSQL_USER }}' \
@@ -101,12 +96,8 @@ jobs:
 
             sudo docker system prune -f
             
-            # 컨테이너 실행 확인
             sleep 5
-            if sudo docker ps | grep -q idear-crawler; then
-              echo "Crawler container is running"
-            else
-              echo "Failed to start crawler container"
+            if ! sudo docker ps | grep -q idear-crawler; then
               sudo docker logs idear-crawler
               exit 1
             fi
