@@ -14,11 +14,13 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.*;
 
+@ConditionalOnProperty(name = "idear.crawler.enabled", havingValue = "true")
 @Slf4j
 @RequiredArgsConstructor
 @Component

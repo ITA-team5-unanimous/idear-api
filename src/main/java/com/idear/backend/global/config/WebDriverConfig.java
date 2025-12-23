@@ -6,12 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * WebDriver 설정
  */
+@ConditionalOnProperty(name = "idear.crawler.enabled", havingValue = "true")
 @Slf4j
 @Configuration
 public class WebDriverConfig {
