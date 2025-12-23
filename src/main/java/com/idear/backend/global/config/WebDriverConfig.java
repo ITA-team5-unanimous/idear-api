@@ -10,6 +10,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Duration;
+
 /**
  * WebDriver 설정
  */
@@ -32,7 +34,15 @@ public class WebDriverConfig {
     options.addArguments("--window-size=1920,1080");
     options.addArguments("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
 
+    options.addArguments("--disable-images");  // 이미지 로드 비활성화
+    options.addArguments("--blink-settings=imagesEnabled=false");
+
     this.driver = new ChromeDriver(options);
+
+    driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(120));
+    driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(90));
+    driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(15));
+
     log.info("WebDriver 초기화 완료");
 
     return this.driver;
