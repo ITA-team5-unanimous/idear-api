@@ -21,13 +21,6 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Install Chrome
-        run: |
-          set -ex
-          sudo apt-get update -y
-          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          sudo apt install -y ./google-chrome-stable_current_amd64.deb
-
       - name: Grant execute permission to gradlew
         shell: bash
         run: chmod +x ./gradlew
@@ -38,7 +31,7 @@ jobs:
           arguments: clean bootJar
 
       - name: docker image build
-        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }} .
+        run: docker build -f Dockerfile.api -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }} .
 
       - name: docker login
         uses: docker/login-action@v2

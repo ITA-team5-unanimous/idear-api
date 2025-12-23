@@ -29,11 +29,8 @@ public class LinkareerCrawlScheduler {
       return;
     }
 
-    log.info("=== 애플리케이션 시작: 초기 백필 시작 ===");
-
     try {
       linkareerCrawler.initialBackfill();
-      log.info("=== 초기 백필 완료 ===");
     } catch (Exception e) {
       log.error("초기 백필 실패. 다음 스케줄에서 재시도합니다.", e);
     }
@@ -54,11 +51,8 @@ public class LinkareerCrawlScheduler {
       return;
     }
 
-    log.info("=== 스케줄 실행: 일일 업데이트 시작 ===");
-
     try {
       linkareerCrawler.dailyUpdate();
-      log.info("=== 일일 업데이트 완료 ===");
     } catch (Exception e) {
       log.error("일일 업데이트 실패", e);
     }

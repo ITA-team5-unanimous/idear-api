@@ -1,16 +1,17 @@
 package com.idear.backend.contest.crawler;
 
 import com.idear.backend.contest.crawler.parser.LinkareerPageParser;
+import com.idear.backend.contest.crawler.service.ContestPersistenceService;
 import com.idear.backend.contest.crawler.service.ContestSaveService;
 import com.idear.backend.contest.repository.ContestRepository;
 import com.idear.backend.global.exception.CustomException;
 import com.idear.backend.global.exception.ErrorCode;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -18,24 +19,13 @@ import java.util.Set;
 @ConditionalOnProperty(name = "idear.crawler.enabled", havingValue = "true")
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class LinkareerCrawler {
 
   private final LinkareerPageParser pageParser;
-  private final ContestSaveService saveService;
+  private final ContestSaveService contestSaveService;
   private final ContestRepository contestRepository;
-  private final LinkareerCrawler self;
-
-  public LinkareerCrawler(
-    LinkareerPageParser pageParser,
-    ContestSaveService saveService,
-    ContestRepository contestRepository,
-    @Lazy LinkareerCrawler self
-  ) {
-    this.pageParser = pageParser;
-    this.saveService = saveService;
-    this.contestRepository = contestRepository;
-    this.self = self;
-  }
+  private final ContestPersistenceService contestPersistenceService;
 
   private static final int MAX_PAGES = 3; // 크롤링할 최대 페이지 수 (초기 백필용)
 
@@ -43,11 +33,6 @@ public class LinkareerCrawler {
    * 초기 백필 (최초 1회 실행)
    */
   public void initialBackfill() {
-    if (contestRepository.count() >= 10) {
-      log.info("이미 데이터가 존재하여 초기 백필 스킵");
-      return;
-    }
-
     log.info("=== 초기 백필 시작 ===");
 
     int totalSaved = 0;
@@ -63,7 +48,7 @@ public class LinkareerCrawler {
         }
 
         // 페이지별로 트랜잭션 분리하여 저장
-        int pageSaved = self.processPageBatch(urls, processedUrls);
+        int pageSaved = contestSaveService.saveBatch(urls, processedUrls);
         totalSaved += pageSaved;
 
         // 전체가 중복이면 종료
@@ -84,13 +69,12 @@ public class LinkareerCrawler {
   /**
    * 일일 업데이트
    */
-  @Transactional
   public void dailyUpdate() {
     log.info("=== 일일 업데이트 시작 ===");
 
     try {
       // 1. 마감된 공모전 삭제
-      saveService.deleteClosedContests();
+      contestPersistenceService.deleteClosedContests(LocalDate.now());
 
       // 2. 새 공모전 추가 (페이지 제한 없이, 중복 발견 시 즉시 중단)
       int newCount = crawlNewContests();
@@ -133,7 +117,7 @@ public class LinkareerCrawler {
         }
 
         // 중복이 아니면 상세 크롤링 & 저장
-        if (saveService.saveContestIfNotExists(url, processedUrls)) {
+        if (contestSaveService.saveContestIfNotExists(url, processedUrls)) {
           totalSaved++;
         }
       }
@@ -143,14 +127,6 @@ public class LinkareerCrawler {
 
     log.info("=== 새 공모전 크롤링 완료 (총 {}개 저장) ===", totalSaved);
     return totalSaved;
-  }
-
-  /**
-   * URL 목록 처리
-   */
-  @Transactional
-  public int processPageBatch(List<String> urls, Set<String> processedUrls) {
-    return saveService.saveBatch(urls, processedUrls);
   }
 
   public long countContests() {
