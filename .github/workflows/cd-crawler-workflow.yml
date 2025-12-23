@@ -85,6 +85,10 @@ jobs:
             echo "Running the new crawler container"
             sudo docker run --name idear-crawler -d \
               --restart unless-stopped \
+              --memory="800m" \
+              --memory-swap="1g" \
+              --cpus="0.5" \
+              --shm-size="256m" \
               -e SPRING_PROFILES_ACTIVE=crawler \
               -e PROD_MYSQL_URL='${{ secrets.PROD_MYSQL_URL }}' \
               -e PROD_MYSQL_USER='${{ secrets.PROD_MYSQL_USER }}' \
@@ -93,6 +97,16 @@ jobs:
               -e REDIS_PORT='${{ secrets.REDIS_PORT }}' \
               -e REDIS_PASSWORD='${{ secrets.REDIS_PASSWORD }}' \
               -e FRONT_ORIGIN=${{ secrets.FRONT_ORIGIN }} \
-                ${{ secrets.DOCKERHUB_USERNAME }}/idear-crawler:latest
+              ${{ secrets.DOCKERHUB_USERNAME }}/idear-crawler:latest
 
             sudo docker system prune -f
+            
+            # 컨테이너 실행 확인
+            sleep 5
+            if sudo docker ps | grep -q idear-crawler; then
+              echo "Crawler container is running"
+            else
+              echo "Failed to start crawler container"
+              sudo docker logs idear-crawler
+              exit 1
+            fi

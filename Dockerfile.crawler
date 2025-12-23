@@ -18,5 +18,8 @@ ARG JAR_FILE=build/libs/*.jar
 
 COPY ${JAR_FILE} app.jar
 
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD pgrep -f "java.*app.jar" || exit 1
+
 # 크롤러 프로필로 실행
 ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=crawler", "app.jar"]
