@@ -22,11 +22,11 @@ spring:
       password: ${REDIS_PASSWORD}
   task:
     scheduling:
-      enabled: true
+      enabled: false
 
 idear:
   crawler:
-    enabled: true
+    enabled: false
 
 server:
   servlet:
