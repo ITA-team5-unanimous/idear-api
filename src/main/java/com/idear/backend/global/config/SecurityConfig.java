@@ -7,6 +7,7 @@ import com.idear.backend.global.security.filter.JwtAuthenticationFilter;
 import com.idear.backend.global.security.oauth.service.CustomOAuth2UserService;
 import com.idear.backend.global.security.oauth.handler.OAuth2AuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +28,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
