@@ -5,12 +5,14 @@ import com.idear.backend.contest.domain.Contest;
 import com.idear.backend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+@ConditionalOnProperty(name = "idear.crawler.enabled", havingValue = "true")
 @Slf4j
 @RequiredArgsConstructor
 @Service
