@@ -82,6 +82,7 @@ jobs:
 
             echo "Running the new crawler container"
             sudo docker run --name idear-crawler -d \
+                 --restart unless-stopped \
                  -e SPRING_PROFILES_ACTIVE=crawler \
                  -e PROD_MYSQL_URL=${{ secrets.PROD_MYSQL_URL }} \
                  -e PROD_MYSQL_USER=${{ secrets.PROD_MYSQL_USER }} \
