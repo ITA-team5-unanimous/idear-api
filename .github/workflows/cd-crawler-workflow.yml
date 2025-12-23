@@ -84,14 +84,27 @@ jobs:
 
             echo "Running the new crawler container"
             sudo docker run --name idear-crawler -d \
-                 --restart unless-stopped \
-                 -e SPRING_PROFILES_ACTIVE=crawler \
-                 -e PROD_MYSQL_URL=${{ secrets.PROD_MYSQL_URL }} \
-                 -e PROD_MYSQL_USER=${{ secrets.PROD_MYSQL_USER }} \
-                 -e PROD_MYSQL_PASSWORD=${{ secrets.PROD_MYSQL_PASSWORD }} \
-                 -e REDIS_HOST=${{ secrets.REDIS_HOST }} \
-                 -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
-                 -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
-                 ${{ secrets.DOCKERHUB_USERNAME }}/idear-crawler:latest
+                --restart unless-stopped \
+                -e SPRING_PROFILES_ACTIVE=crawler \
+                -e PROD_MYSQL_URL=${{ secrets.PROD_MYSQL_URL }} \
+                -e PROD_MYSQL_USER=${{ secrets.PROD_MYSQL_USER }} \
+                -e PROD_MYSQL_PASSWORD=${{ secrets.PROD_MYSQL_PASSWORD }} \
+                -e REDIS_HOST=${{ secrets.REDIS_HOST }} \
+                -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
+                -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
+                -e JWT_KEY=${{ secrets.JWT_KEY }} \
+                -e KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} \
+                -e KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }} \
+                -e KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }} \
+                -e NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }} \
+                -e NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }} \
+                -e NAVER_REDIRECT_URI=${{ secrets.NAVER_REDIRECT_URI }} \
+                -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
+                -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
+                -e GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }} \
+                -e S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }} \
+                -e S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }} \
+                -e FRONT_ORIGIN=${{ secrets.FRONT_ORIGIN }} \
+                ${{ secrets.DOCKERHUB_USERNAME }}/idear-crawler:latest
 
             sudo docker system prune -f
