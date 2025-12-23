@@ -67,6 +67,8 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           script: |
+            sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" -p "${{ secrets.DOCKERHUB_PASSWORD }}"
+            
             CONTAINER_ID=$(sudo docker ps -aqf "name=^/idear-crawler$")
             if [ -n "$CONTAINER_ID" ]; then
               echo "Stopping existing crawler container: $CONTAINER_ID"
@@ -78,7 +80,7 @@ jobs:
 
             sudo docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/idear-crawler || true
 
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/idear-crawler
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/idear-crawler:latest
 
             echo "Running the new crawler container"
             sudo docker run --name idear-crawler -d \
@@ -90,6 +92,6 @@ jobs:
                  -e REDIS_HOST=${{ secrets.REDIS_HOST }} \
                  -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
                  -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
-                 ${{ secrets.DOCKERHUB_USERNAME }}/idear-crawler
+                 ${{ secrets.DOCKERHUB_USERNAME }}/idear-crawler:latest
 
-            sudo docker system prune -a -f
+            sudo docker system prune -f
