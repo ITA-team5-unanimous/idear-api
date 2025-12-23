@@ -70,15 +70,15 @@ jobs:
               sudo docker rm $CONTAINER_ID
             fi
 
-            sudo docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/idear-crawler || true
+            sudo docker image prune -af ${{ secrets.DOCKERHUB_USERNAME }}/idear-crawler || true
             
             sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" -p "${{ secrets.DOCKERHUB_PASSWORD }}"
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/idear-crawler:latest
 
             sudo docker run --name idear-crawler -d \
               --restart unless-stopped \
-              --memory="500m" \
-              --memory-swap="500m" \
+              --memory="700m" \
+              --memory-swap="1g" \
               --cpus="0.5" \
               --shm-size="256m" \
               --log-driver json-file \

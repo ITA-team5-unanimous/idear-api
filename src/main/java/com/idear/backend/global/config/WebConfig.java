@@ -2,6 +2,7 @@ package com.idear.backend.global.config;
 
 import com.idear.backend.global.resolver.ValidatedUserArgumentResolver;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class WebConfig implements WebMvcConfigurer {
 
     private final ValidatedUserArgumentResolver validatedUserArgumentResolver;

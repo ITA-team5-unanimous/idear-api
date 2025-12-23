@@ -6,6 +6,7 @@ import com.idear.backend.global.exception.CustomException;
 import com.idear.backend.global.security.token.TokenProvider;
 import com.idear.backend.global.dto.UserInfo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +14,7 @@ import static com.idear.backend.global.exception.ErrorCode.INVALID_REFRESH_TOKEN
 
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class AuthService {
 
     private final RefreshTokenRepository refreshTokenRepository;

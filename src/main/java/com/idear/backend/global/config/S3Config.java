@@ -1,6 +1,7 @@
 package com.idear.backend.global.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,6 +15,7 @@ import lombok.Getter;
 
 @Getter
 @Configuration
+@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class S3Config {
 	@Value("${cloud.aws.credentials.access-key}")
 	private String accessKey;
