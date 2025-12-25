@@ -5,6 +5,7 @@ import com.idear.backend.global.exception.CustomException;
 import com.idear.backend.global.dto.UserInfo;
 import com.idear.backend.user.domain.UserRole;
 import io.jsonwebtoken.*;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,6 +66,18 @@ public class TokenProvider {
         String authorization = request.getHeader(AUTHORIZATION);
         if (StringUtils.hasText(authorization) && authorization.startsWith(BEARER)) {
             return authorization.substring(BEARER.length());
+        }
+        return null;
+    }
+
+    public String resolveTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("iDear_admin_token".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
         }
         return null;
     }
