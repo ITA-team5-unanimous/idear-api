@@ -41,6 +41,7 @@ public class SecurityConfig {
     private final String[] PUBLIC_POST = {
             "/auth/reissue",
             "/blockchain/webhook",
+            "/inquiry",
             "/test/**"
     };
 
@@ -54,6 +55,7 @@ public class SecurityConfig {
 
             // Swagger UI
             "/swagger-ui/**",
+            "/swagger-ui.html",
             "/v3/api-docs/**"
     };
 
@@ -87,6 +89,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, PUBLIC_POST).permitAll()
                         .requestMatchers(HttpMethod.GET, PUBLIC_GET).permitAll()
                         .requestMatchers(HttpMethod.PUT, PUBLIC_PUT).permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
 
