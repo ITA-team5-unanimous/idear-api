@@ -1,5 +1,6 @@
 package com.idear.backend.blockchain.application;
 
+import com.idear.backend.alert.application.service.AlertService;
 import com.idear.backend.blockchain.domain.RegistrationFailureReason;
 import com.idear.backend.blockchain.dto.request.RegistrationResultRequest;
 import com.idear.backend.global.exception.CustomException;
@@ -25,7 +26,7 @@ public class BlockchainService {
 	private String blockchainGatewayUrl;
 
 	private final IdeaFileRepository ideaFileRepository;
-
+	private final AlertService alertService;
 	private final RestTemplate restTemplate;
 
 	public void requestCommitRegistration(String commit, Long timestamp, String userSignature, String serverSignature) {
@@ -81,7 +82,11 @@ public class BlockchainService {
 
 		ideaFile.registrationSucceed(txHash, registeredAt);
 
-		// TODO: 성공 내용 Alert 생성
+		alertService.createRegistrationAlert(
+				"아이디어 파일이 등록되었습니다. 내용이 맞는지 확인해주세요.",
+				ideaFile
+		);
+
 		// TODO: 성공 내용 이메일 전송
 	}
 
@@ -99,7 +104,11 @@ public class BlockchainService {
 
 		ideaFile.registrationFailed(txHash, reason);
 
-		// TODO: 실패 내용 Alert 생성
+		alertService.createRegistrationAlert(
+				"아이디어 파일 등록이 실패하였습니다. 상세 내역을 확인해주세요.",
+				ideaFile
+		);
+
 		// TODO: 실패 내용 이메일 전송
 	}
 

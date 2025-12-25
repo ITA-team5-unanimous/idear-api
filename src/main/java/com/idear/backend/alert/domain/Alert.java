@@ -48,6 +48,7 @@ public class Alert {
 
     public static Alert ofRegistration(String content, IdeaFile ideaFile){
         return Alert.builder()
+                .user(ideaFile.getIdea().getUser())
                 .alertType(AlertType.REGISTRATION)
                 .content(content)
                 .ideaId(ideaFile.getIdea().getIdeaId())
