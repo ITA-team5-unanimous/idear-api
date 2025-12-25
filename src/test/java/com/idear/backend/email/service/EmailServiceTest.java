@@ -1,4 +1,4 @@
-package com.idear.backend.global.infrasturcture;
+package com.idear.backend.email.service;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-//@Disabled("This is an integration test that sends a real email and requires SMTP configuration.")
-class EmailServiceIntegrationTest {
+@Disabled("This is an integration test that sends a real email and requires SMTP configuration.")
+class EmailServiceTest {
 
     @Autowired
     private EmailService emailService;
