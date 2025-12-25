@@ -47,6 +47,10 @@ public enum ErrorCode {
     REGISTRATION_STATUS_NOT_VALID(HttpStatus.BAD_REQUEST, "B001", "유효하지 않은 status 입니다."),
     REGISTRATION_FAILURE_REASON_NOT_VALID(HttpStatus.BAD_REQUEST, "B002", "유효하지 않은 reason 입니다."),
 
+    // Inquiry
+    NOT_FOUND_INQUIRY(HttpStatus.NOT_FOUND, "Q001", "존재하지 않는 문의입니다."),
+    ALREADY_ANSWERED(HttpStatus.CONFLICT, "Q002", "이미 답변된 문의입니다."),
+
     // Email
     EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "E001", "이메일 전송에 실패했습니다.");
 
