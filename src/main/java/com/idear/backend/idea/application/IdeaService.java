@@ -1,5 +1,6 @@
 package com.idear.backend.idea.application;
 
+import com.idear.backend.blockchain.application.BlockchainService;
 import com.idear.backend.contest.domain.Contest;
 import com.idear.backend.contest.repository.ContestRepository;
 import com.idear.backend.global.exception.CustomException;
@@ -15,6 +16,7 @@ import com.idear.backend.idea.infrastructure.repository.IdeaFileRepository;
 import com.idear.backend.idea.infrastructure.repository.IdeaImageRepository;
 import com.idear.backend.idea.infrastructure.repository.IdeaRepository;
 import com.idear.backend.idea.util.HashUtil;
+import com.idear.backend.idea.util.ServerSignatureService;
 import com.idear.backend.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,8 +39,10 @@ public class IdeaService {
 	private final IdeaFileRepository ideaFileRepository;
 	private final IdeaImageRepository ideaImageRepository;
 	private final FileStorageService fileStorageService;
+	private final BlockchainService blockchainService;
 	private final ContestRepository contestRepository;
 	private final HashUtil hashUtil;
+	private final ServerSignatureService serverSignatureService;
 
 	@Transactional
 	public IdeaRegistrationInitResponse initIdeaRegistration(
@@ -99,21 +103,26 @@ public class IdeaService {
 				throw CustomException.of(ErrorCode.IDEA_FILE_IDEA_MISMATCH);
 			}
 
-			String serverSignature = hashUtil.generateServerSignature(
-					signatureData.getUserSignature(),
-					ideaFile.getCommit(),
-					ideaFile.getRequestedTimestamp()
-			);
+			String userSignature = signatureData.getUserSignature();
 
-			ideaFile.submitUserSignature(signatureData.getUserSignature(), serverSignature);
+			if (!userSignature.startsWith("0x")) {
+				userSignature = "0x" + userSignature;
+			}
 
-			/* TODO BlockchainGatewayService 구현 및 호출
-			blockchainGatewayService.requestCommitRegistration(
+			String serverSignature = serverSignatureService.generateServerSignature(
 					ideaFile.getCommit(),
 					ideaFile.getRequestedTimestamp(),
+					userSignature
+			);
+
+			ideaFile.submitUserSignature(userSignature, serverSignature);
+
+			blockchainService.requestCommitRegistration(
+					ideaFile.getCommit(),
+					ideaFile.getRequestedTimestamp(),
+					userSignature,
 					serverSignature
 			);
-			*/
 
 			registrationResults.add(FileRegistrationResult.builder()
 					.ideaFileId(ideaFile.getIdeaFileId())

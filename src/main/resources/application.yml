@@ -54,6 +54,12 @@ secret:
     refresh:
       expiration: 1209600000
 
+blockchain:
+  gateway:
+    url: ${BLOCKCHAIN_GATEWAY_URL}
+  server:
+    private-key: ${SERVER_PRIVATE_KEY}
+
 ---
 spring:
   config:

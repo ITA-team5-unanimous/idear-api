@@ -2,6 +2,7 @@ package com.idear.backend.idea.domain;
 
 import java.time.LocalDateTime;
 
+import com.idear.backend.blockchain.domain.RegistrationFailureReason;
 import com.idear.backend.global.exception.CustomException;
 import com.idear.backend.global.exception.ErrorCode;
 import org.hibernate.annotations.SQLDelete;
@@ -46,7 +47,7 @@ public class IdeaFile {
 	@Column(length = 64, nullable = false)
 	private String salt;
 
-	@Column(length = 64, nullable = false, unique = true)
+	@Column(length = 66, nullable = false, unique = true)
 	private String commit;
 
 	@Column(length = 255)
@@ -67,6 +68,9 @@ public class IdeaFile {
 	private Long requestedTimestamp;
 
 	private Long registeredTimestamp;
+
+	@Enumerated(EnumType.STRING)
+	private RegistrationFailureReason registrationFailureReason;
 
 	private LocalDateTime deletedAt;
 
@@ -107,6 +111,22 @@ public class IdeaFile {
 		this.userSignature = userSignature;
 		this.serverSignature = serverSignature;
 		this.registerStatus = RegisterStatus.BLOCKCHAIN_PENDING;
+	}
+
+	public void registrationSucceed(String txHash, Long registeredAt){
+		validateStatus(RegisterStatus.BLOCKCHAIN_PENDING);
+
+		this.txHash = txHash;
+		this.registeredTimestamp = registeredAt;
+		this.registerStatus = RegisterStatus.REGISTERED;
+	}
+
+	public void registrationFailed(String txHash, RegistrationFailureReason reason){
+		validateStatus(RegisterStatus.BLOCKCHAIN_PENDING);
+
+		this.txHash = txHash;
+		this.registrationFailureReason = reason;
+		this.registerStatus = RegisterStatus.FAILED;
 	}
 
 	private void validateStatus(RegisterStatus expected) {
