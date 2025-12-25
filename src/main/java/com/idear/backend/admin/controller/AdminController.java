@@ -10,6 +10,8 @@ import com.idear.backend.user.infrastructure.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -25,11 +27,14 @@ public class AdminController {
     private final UserRepository userRepository;
     private final TokenProvider tokenProvider;
 
+    // ------------ local test 용 ---------------------
+    @Profile("local")
     @GetMapping("/login")
     public String showLoginForm() {
         return "admin/admin-login";
     }
 
+    @Profile("local")
     @PostMapping("/login")
     public String handleLogin(@RequestParam String email,
                               @RequestParam String password,
@@ -37,14 +42,15 @@ public class AdminController {
 
         if ("admin@idear.com".equals(email) && "admin".equals(password)) {
             User adminUser = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("Default admin user not found."));
+                .orElseThrow(() -> new RuntimeException("Default admin user not found."));
 
-            UserInfo adminInfo = new UserInfo(adminUser.getUserId(), adminUser.getName(), adminUser.getEmail(), adminUser.getProviderInfo(), adminUser.getRole());
+            UserInfo adminInfo = new UserInfo(adminUser.getUserId(), adminUser.getName(), adminUser.getEmail(),
+                adminUser.getProviderInfo(), adminUser.getRole());
             String accessToken = tokenProvider.generateAccessToken(adminInfo);
 
             Cookie cookie = new Cookie("iDear_admin_token", accessToken);
             cookie.setHttpOnly(true);
-            cookie.setPath("/api"); 
+            cookie.setPath("/api");
             cookie.setMaxAge(60 * 60 * 24); // 1일
             response.addCookie(cookie);
 
@@ -53,6 +59,7 @@ public class AdminController {
 
         return "redirect:/admin/login?error";
     }
+    // -----------------------------------------------------
 
     @GetMapping("/inquiries")
     public String listInquiries(Model model) {
