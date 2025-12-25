@@ -41,13 +41,12 @@ public class SecurityConfig {
     private final String[] PUBLIC_POST = {
             "/auth/reissue",
             "/blockchain/webhook",
-            "/inquiry",
             "/test/**"
     };
 
     private final String[] PUBLIC_GET = {
             "/",
-            "/test/hello",
+            "/test/**",
 
             // OAuth2
             "/oauth2/authorization/**",
@@ -89,6 +88,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, PUBLIC_POST).permitAll()
                         .requestMatchers(HttpMethod.GET, PUBLIC_GET).permitAll()
                         .requestMatchers(HttpMethod.PUT, PUBLIC_PUT).permitAll()
+                        .requestMatchers("/admin/login").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
