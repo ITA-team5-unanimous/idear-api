@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>iDear - 문의 답변</title>
+</head>
+<body>
+    <h1 th:text="'안녕하세요, ' + ${userName} + '님.'">안녕하세요, [사용자]님.</h1>
+    <p>문의주신 내용에 대한 답변입니다.</p>
+    <hr/>
+    <h2>문의 내용</h2>
+    <p th:text="${inquiryContent}">[문의 내용]</p>
+    <hr/>
+    <h2>답변 내용</h2>
+    <p th:text="${responseContent}">[답변 내용]</p>
+    <br/>
+    <p>감사합니다.</p>
+    <p><strong>iDear 팀 드림</strong></p>
+</body>
+</html>
