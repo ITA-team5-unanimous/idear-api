@@ -62,3 +62,9 @@ cloud:
     bucket: idear-file
     region:
       static: ap-northeast-2
+
+blockchain:
+  gateway:
+    url: http://localhost:3000
+  server:
+    private-key: "0x0000000000000000000000000000000000000000000000000000000000000001"

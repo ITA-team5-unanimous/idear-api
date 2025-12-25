@@ -17,9 +17,9 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
-      password: ${REDIS_PASSWORD}
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
   task:
     scheduling:
       enabled: false
@@ -53,6 +53,12 @@ secret:
       expiration: 3600000
     refresh:
       expiration: 1209600000
+
+blockchain:
+  gateway:
+    url: ${BLOCKCHAIN_GATEWAY_URL}
+  server:
+    private-key: ${SERVER_PRIVATE_KEY}
 
 ---
 spring:

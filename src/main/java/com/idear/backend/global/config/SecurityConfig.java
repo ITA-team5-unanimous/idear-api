@@ -39,7 +39,8 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     private final String[] PUBLIC_POST = {
-            "/auth/reissue"
+            "/auth/reissue",
+            "/blockchain/webhook"
     };
 
     private final String[] PUBLIC_GET = {

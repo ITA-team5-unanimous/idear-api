@@ -1,13 +1,13 @@
 package com.idear.backend.idea.util;
 
+import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-
-import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 @Component
 public class HashUtil {
@@ -34,12 +34,7 @@ public class HashUtil {
 	}
 
 	public String generateCommit(String fileHash, String salt) {
-		return sha256(fileHash + salt);
-	}
-
-	public String generateServerSignature(String userSignature, String commit, Long timestamp) {
-		String data = userSignature + commit + timestamp;
-		return sha256(data);
+		return "0x" + sha256(fileHash + salt);
 	}
 
 	private String sha256(String input) {

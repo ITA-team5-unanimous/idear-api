@@ -38,7 +38,14 @@ public enum ErrorCode {
     CRAWLING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "C001", "크롤링 중 오류가 발생했습니다."),
     PAGE_PARSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "C002", "페이지 파싱에 실패했습니다."),
     CONTEST_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "C003", "공모전 저장에 실패했습니다."),
-    CONTEST_NOT_FOUND(HttpStatus.NOT_FOUND, "C004", "존재하지 않는 공모전입니다.");
+    CONTEST_NOT_FOUND(HttpStatus.NOT_FOUND, "C004", "존재하지 않는 공모전입니다."),
+
+    // Alert
+    ALERT_NOT_FOUND(HttpStatus.NOT_FOUND, "AL001", "존재하지 않는 알림입니다."),
+
+    // Blockchain
+    REGISTRATION_STATUS_NOT_VALID(HttpStatus.BAD_REQUEST, "B001", "유효하지 않은 status 입니다."),
+    REGISTRATION_FAILURE_REASON_NOT_VALID(HttpStatus.BAD_REQUEST, "B002", "유효하지 않은 reason 입니다.");
 
     private final HttpStatus status;
     private final String code;
