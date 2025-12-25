@@ -22,7 +22,7 @@ public class AlertController {
     private final AlertService alertService;
 
     @GetMapping("/unread")
-    private ResponseEntity<ApiResponse<List<AlertResponse>>> getUnreadAlerts(
+    public ResponseEntity<ApiResponse<List<AlertResponse>>> getUnreadAlerts(
     	@Parameter(hidden = true) @ValidatedUser User user
     ){
         List<AlertResponse> response = alertService.getUnreadAlerts(user);
@@ -30,7 +30,7 @@ public class AlertController {
     }
 
     @PostMapping("/{alertId}/read")
-    private ResponseEntity<ApiResponse<Void>> readAlert(
+    public ResponseEntity<ApiResponse<Void>> readAlert(
         @Parameter(hidden = true) @ValidatedUser User user,
         @Parameter(description = "알림 ID", required = true, example = "1")
         @PathVariable Long alertId

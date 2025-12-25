@@ -33,7 +33,7 @@ public class AlertService {
     @Transactional
     public void readAlerts(User user, Long alertId) {
         Alert alert = alertRepository.findById(alertId)
-                .orElseThrow(() -> CustomException.of(ErrorCode.ALERT_NOT_FOUND));;
+                .orElseThrow(() -> CustomException.of(ErrorCode.ALERT_NOT_FOUND));
 
         if (!alert.getUser().getUserId().equals(user.getUserId())) {
             throw CustomException.of(ErrorCode.USER_NOT_OWNER);
