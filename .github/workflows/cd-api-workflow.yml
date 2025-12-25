@@ -55,7 +55,30 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            CONTAINER_ID=$(sudo docker ps -aqf "name=^/idear-api$")
+            set -e
+
+            DOCKER_NETWORK="idear-net"
+            REDIS_CONTAINER_NAME="redis"
+            IMAGE_NAME="${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}"
+            CONTAINER_NAME="idear-api"
+
+            sudo docker network inspect ${DOCKER_NETWORK} >/dev/null 2>&1 || sudo docker network create ${DOCKER_NETWORK}
+
+            if ! sudo docker ps -a --format '{{.Names}}' | grep -qx ${REDIS_CONTAINER_NAME}; then
+              sudo docker run -d \
+                --name ${REDIS_CONTAINER_NAME} \
+                --network ${DOCKER_NETWORK} \
+                --restart unless-stopped \
+                redis:7-alpine
+            else
+              sudo docker network connect ${DOCKER_NETWORK} ${REDIS_CONTAINER_NAME} >/dev/null 2>&1 || true
+
+              if ! sudo docker ps --format '{{.Names}}' | grep -qx ${REDIS_CONTAINER_NAME}; then
+                sudo docker start ${REDIS_CONTAINER_NAME}
+              fi
+            fi
+
+            CONTAINER_ID=$(sudo docker ps -aqf "name=^/${CONTAINER_NAME}$")
             if [ -n "$CONTAINER_ID" ]; then
               echo "Stopping existing container: $CONTAINER_ID"
               sudo docker stop $CONTAINER_ID
@@ -64,20 +87,21 @@ jobs:
               echo "No existing container to stop."
             fi
 
-            sudo docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }} || true
+            sudo docker rmi -f ${IMAGE_NAME} || true
+            sudo docker pull ${IMAGE_NAME}
 
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}
-
-            echo "Running the new container with image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}"
-            sudo docker run --name idear-api -d -p 8080:8080 \
+            echo "Running the new container with image: ${IMAGE_NAME}"
+            sudo docker run --name ${CONTAINER_NAME} -d \
+                 --network ${DOCKER_NETWORK} \
+                 -p 8080:8080 \
+                 --restart unless-stopped \
                  -e SPRING_PROFILES_ACTIVE=prod \
                  -e IDEAR_CRAWLER_ENABLED=false \
                  -e PROD_MYSQL_URL=${{ secrets.PROD_MYSQL_URL }} \
                  -e PROD_MYSQL_USER=${{ secrets.PROD_MYSQL_USER }} \
                  -e PROD_MYSQL_PASSWORD=${{ secrets.PROD_MYSQL_PASSWORD }} \
-                 -e REDIS_HOST=${{ secrets.REDIS_HOST }} \
-                 -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
-                 -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
+                 -e REDIS_HOST=${REDIS_CONTAINER_NAME} \
+                 -e REDIS_PORT=6379 \
                  -e JWT_KEY=${{ secrets.JWT_KEY }} \
                  -e FRONT_ORIGIN=${{ secrets.FRONT_ORIGIN }} \
                  -e S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }} \
@@ -91,6 +115,6 @@ jobs:
                  -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
                  -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
                  -e GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }} \
-                 ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}
+                 ${IMAGE_NAME}
 
             sudo docker system prune -a -f
