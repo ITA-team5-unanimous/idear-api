@@ -80,7 +80,15 @@ jobs:
 
             # 크롤러 컨테이너 실행
             echo "Running the new crawler container"
-            sudo docker run --name idear-crawler -d -p 8080:8080 \
+            sudo docker run --name idear-crawler -d \
+                 --restart unless-stopped \
+                 --memory="700m" \
+                 --memory-swap="1g" \
+                 --cpus="0.5" \
+                 --shm-size="256m" \
+                 --log-driver json-file \
+                 --log-opt max-size=10m \
+                 --log-opt max-file=3 \
                  -e SPRING_PROFILES_ACTIVE=crawler \
                  -e IDEAR_CRAWLER_ENABLED=true \
                  -e PROD_MYSQL_URL=${{ secrets.PROD_MYSQL_URL }} \
