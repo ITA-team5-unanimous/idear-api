@@ -200,6 +200,13 @@ public class LinkareerPageParser {
 
       log.info("{}페이지에서 {}개의 공모전 URL 발견", page, result.size());
 
+      try {
+        driver.manage().deleteAllCookies();
+        log.debug("{}페이지 세션 정리 완료", page);
+      } catch (Exception e) {
+        log.warn("세션 정리 실패 (무시)", e);
+      }
+
       return result;
 
     } catch (Exception e) {
