@@ -88,6 +88,7 @@ jobs:
               -e PROD_MYSQL_URL='${{ secrets.PROD_MYSQL_URL }}' \
               -e PROD_MYSQL_USER='${{ secrets.PROD_MYSQL_USER }}' \
               -e PROD_MYSQL_PASSWORD='${{ secrets.PROD_MYSQL_PASSWORD }}' \
+              -e JWT_KEY=${{ secrets.JWT_KEY }} \
               -e REDIS_HOST='${{ secrets.REDIS_HOST }}' \
               -e REDIS_PORT='${{ secrets.REDIS_PORT }}' \
               -e REDIS_PASSWORD='${{ secrets.REDIS_PASSWORD }}' \
