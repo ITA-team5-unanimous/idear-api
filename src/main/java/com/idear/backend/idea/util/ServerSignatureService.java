@@ -2,6 +2,7 @@ package com.idear.backend.idea.util;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
@@ -10,6 +11,7 @@ import java.security.*;
 import java.security.spec.*;
 
 @Component
+@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class ServerSignatureService {
 
 	private static final String HASH_ALGORITHM = "SHA-256";

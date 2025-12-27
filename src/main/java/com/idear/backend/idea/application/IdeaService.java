@@ -19,6 +19,7 @@ import com.idear.backend.idea.util.HashUtil;
 import com.idear.backend.idea.util.ServerSignatureService;
 import com.idear.backend.user.domain.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class IdeaService {
 
 	private final IdeaRepository ideaRepository;

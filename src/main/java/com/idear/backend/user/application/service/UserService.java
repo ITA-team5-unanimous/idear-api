@@ -3,11 +3,13 @@ package com.idear.backend.user.application.service;
 import com.idear.backend.user.domain.User;
 import com.idear.backend.user.dto.response.UserInfoResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class UserService {
 
     @Transactional(readOnly = true)

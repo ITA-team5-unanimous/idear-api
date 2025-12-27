@@ -8,6 +8,7 @@ import com.idear.backend.global.exception.ErrorCode;
 import com.idear.backend.idea.domain.IdeaFile;
 import com.idear.backend.user.domain.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class AlertService {
 
     private final AlertRepository alertRepository;
