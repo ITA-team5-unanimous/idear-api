@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Configuration;
 import java.util.List;
 
 @Configuration
-@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class SwaggerConfig {
 
     private static final String SECURITY_SCHEME_NAME = "Bearer Auth";

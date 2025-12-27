@@ -7,26 +7,12 @@ spring:
     multipart:
       max-file-size: 20MB
       max-request-size: 20MB
-  jpa:
-    properties:
-      hibernate:
-        jdbc:
-          batch_size: 50
-        order_inserts: true  # INSERT 쿼리 정렬
-        order_updates: true  # UPDATE 쿼리 정렬
 
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
-  task:
-    scheduling:
-      enabled: false
-
-idear:
-  crawler:
-    enabled: false
 
 server:
   servlet:

@@ -12,7 +12,6 @@ import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class WebConfig implements WebMvcConfigurer {
 
     private final ValidatedUserArgumentResolver validatedUserArgumentResolver;

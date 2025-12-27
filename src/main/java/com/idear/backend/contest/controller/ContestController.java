@@ -23,7 +23,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/contests")
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class ContestController {
 
   private final ContestService contestService;

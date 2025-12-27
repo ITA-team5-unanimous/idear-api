@@ -19,7 +19,6 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class ValidatedUserArgumentResolver implements HandlerMethodArgumentResolver {
 
     private final UserRepository userRepository;

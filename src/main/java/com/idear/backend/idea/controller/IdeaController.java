@@ -27,7 +27,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/ideas")
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class IdeaController {
 
 	private final IdeaService ideaService;

@@ -18,7 +18,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/alerts")
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class AlertController {
 
     private final AlertService alertService;

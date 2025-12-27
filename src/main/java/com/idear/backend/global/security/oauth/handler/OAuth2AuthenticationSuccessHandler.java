@@ -17,7 +17,6 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     @Value("${spring.front.origin}")

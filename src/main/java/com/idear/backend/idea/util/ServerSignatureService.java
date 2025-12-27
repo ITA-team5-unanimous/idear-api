@@ -11,7 +11,6 @@ import java.security.*;
 import java.security.spec.*;
 
 @Component
-@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class ServerSignatureService {
 
 	private static final String HASH_ALGORITHM = "SHA-256";
