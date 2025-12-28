@@ -36,7 +36,7 @@ secret:
   jwt:
     key: ${JWT_KEY}
     access:
-      expiration: 3600000
+      expiration: 1209600000
     refresh:
       expiration: 1209600000
 
