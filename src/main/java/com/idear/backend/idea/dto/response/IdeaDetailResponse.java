@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.idear.backend.idea.domain.Idea;
+import com.idear.backend.idea.domain.IdeaVersion;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -13,6 +14,8 @@ import lombok.Getter;
 @Builder
 public class IdeaDetailResponse {
 	private Long ideaId;
+	private Long ideaVersionId;
+	private Integer versionNumber;
 	private String title;
 	private String shortDescription;
 	private String description;
@@ -20,21 +23,23 @@ public class IdeaDetailResponse {
 	private List<IdeaFileInfo> files;
 	private List<IdeaImageInfo> images;
 
-	public static IdeaDetailResponse of(Idea idea) {
-		List<IdeaFileInfo> fileInfos = idea.getFiles().stream()
+	public static IdeaDetailResponse of(Idea idea, IdeaVersion version) {
+		List<IdeaFileInfo> fileInfos = version.getFiles().stream()
 				.map(IdeaFileInfo::of)
 				.collect(Collectors.toList());
 
-		List<IdeaImageInfo> imageInfos = idea.getImages().stream()
+		List<IdeaImageInfo> imageInfos = version.getImages().stream()
 				.map(IdeaImageInfo::of)
 				.collect(Collectors.toList());
 
 		return IdeaDetailResponse.builder()
 				.ideaId(idea.getIdeaId())
+				.ideaVersionId(version.getIdeaVersionId())
+				.versionNumber(version.getVersionNumber())
 				.title(idea.getTitle())
-				.shortDescription(idea.getShortDescription())
-				.description(idea.getDescription())
-				.requestedAt(idea.getRequestedAt())
+				.shortDescription(version.getShortDescription())
+				.description(version.getDescription())
+				.requestedAt(version.getRequestedAt())
 				.files(fileInfos)
 				.images(imageInfos)
 				.build();

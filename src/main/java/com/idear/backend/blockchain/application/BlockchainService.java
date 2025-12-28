@@ -5,12 +5,14 @@ import com.idear.backend.blockchain.domain.RegistrationFailureReason;
 import com.idear.backend.blockchain.dto.request.RegistrationResultRequest;
 import com.idear.backend.global.exception.CustomException;
 import com.idear.backend.global.exception.ErrorCode;
+import com.idear.backend.idea.domain.Idea;
 import com.idear.backend.idea.domain.IdeaFile;
 import com.idear.backend.idea.infrastructure.repository.IdeaFileRepository;
+import com.idear.backend.idea.infrastructure.repository.IdeaRepository;
+import com.idear.backend.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -27,6 +29,7 @@ public class BlockchainService {
 	private String blockchainGatewayUrl;
 
 	private final IdeaFileRepository ideaFileRepository;
+	private final IdeaRepository ideaRepository;
 	private final AlertService alertService;
 	private final RestTemplate restTemplate;
 
@@ -83,8 +86,14 @@ public class BlockchainService {
 
 		ideaFile.registrationSucceed(txHash, registeredAt);
 
+		Idea idea = ideaRepository.findIdeaByFile(ideaFile)
+				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
+		User user = idea.getUser();
+
 		alertService.createRegistrationAlert(
 				"아이디어 파일이 등록되었습니다. 내용이 맞는지 확인해주세요.",
+				user,
+				idea.getIdeaId(),
 				ideaFile
 		);
 
@@ -105,8 +114,14 @@ public class BlockchainService {
 
 		ideaFile.registrationFailed(txHash, reason);
 
+		Idea idea = ideaRepository.findIdeaByFile(ideaFile)
+				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
+		User user = idea.getUser();
+
 		alertService.createRegistrationAlert(
 				"아이디어 파일 등록이 실패하였습니다. 상세 내역을 확인해주세요.",
+				user,
+				idea.getIdeaId(),
 				ideaFile
 		);
 
