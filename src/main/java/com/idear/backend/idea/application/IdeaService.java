@@ -157,7 +157,7 @@ public class IdeaService {
 		return ideas.stream()
 				.map(idea -> {
 					IdeaVersion latestVersion = ideaVersionRepository
-							.findLatestByIdea(idea)
+							.findTopByIdeaOrderByVersionNumberDesc(idea)
 							.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_VERSION_NOT_FOUND));
 					return IdeaSummaryResponse.of(idea, latestVersion);
 				})

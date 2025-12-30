@@ -16,11 +16,7 @@ public interface IdeaVersionRepository extends JpaRepository<IdeaVersion, Long> 
 	@Query("SELECT MAX(v.versionNumber) FROM IdeaVersion v WHERE v.idea = :idea")
 	Optional<Integer> findMaxVersionNumberByIdea(@Param("idea") Idea idea);
 
-	@Query("SELECT v FROM IdeaVersion v " +
-		   "WHERE v.idea = :idea " +
-		   "ORDER BY v.versionNumber DESC " +
-		   "LIMIT 1")
-	Optional<IdeaVersion> findLatestByIdea(@Param("idea") Idea idea);
+	Optional<IdeaVersion> findTopByIdeaOrderByVersionNumberDesc(Idea idea);
 
 	@Query("SELECT DISTINCT v FROM IdeaVersion v " +
 		   "LEFT JOIN FETCH v.versionFiles vf " +
