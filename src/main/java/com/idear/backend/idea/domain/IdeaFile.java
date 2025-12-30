@@ -28,10 +28,6 @@ public class IdeaFile {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long ideaFileId;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "idea_id", nullable = false)
-	private Idea idea;
-
 	@Column(nullable = false)
 	private String originalFileName;
 
@@ -99,10 +95,6 @@ public class IdeaFile {
 				.commit(commit)
 				.requestedTimestamp(requestedTimestamp)
 				.build();
-	}
-
-	protected void attachTo(Idea idea) {
-		this.idea = idea;
 	}
 
 	public void submitUserSignature(String userSignature, String serverSignature) {

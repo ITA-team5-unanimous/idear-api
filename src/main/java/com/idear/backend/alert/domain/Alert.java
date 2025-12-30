@@ -46,12 +46,12 @@ public class Alert {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    public static Alert ofRegistration(String content, IdeaFile ideaFile){
+    public static Alert ofRegistration(String content, User user, Long ideaId, IdeaFile ideaFile){
         return Alert.builder()
-                .user(ideaFile.getIdea().getUser())
+                .user(user)
                 .alertType(AlertType.REGISTRATION)
                 .content(content)
-                .ideaId(ideaFile.getIdea().getIdeaId())
+                .ideaId(ideaId)
                 .ideaFileId(ideaFile.getIdeaFileId())
                 .createdAt(LocalDateTime.now())
                 .build();
