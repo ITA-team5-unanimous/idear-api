@@ -267,7 +267,8 @@ public class IdeaService {
 
 		for (MultipartFile image : images) {
 			if (!image.isEmpty()) {
-				String fileName = UUID.randomUUID().toString();
+				String extension = getFileExtension(image.getOriginalFilename());
+				String fileName = UUID.randomUUID() + extension;
 				String filePath = fileStorageService.uploadFile(image, fileName, "image");
 
 				IdeaImage ideaImage = IdeaImage.of(
@@ -291,7 +292,8 @@ public class IdeaService {
 
 		for (MultipartFile file : files) {
 			if (!file.isEmpty()) {
-				String fileName = UUID.randomUUID().toString();
+				String extension = getFileExtension(file.getOriginalFilename());
+				String fileName = UUID.randomUUID() + extension;
 				String filePath = fileStorageService.uploadFile(file, fileName, "file");
 
 				String fileHash = hashUtil.generateFileHash(file);
@@ -328,6 +330,13 @@ public class IdeaService {
 			return "0x" + signature;
 		}
 		return signature;
+	}
+
+	private String getFileExtension(String originalFilename) {
+		if (originalFilename == null || !originalFilename.contains(".")) {
+			return "";
+		}
+		return originalFilename.substring(originalFilename.lastIndexOf("."));
 	}
 
 	private void copyImagesFromPreviousVersion(IdeaVersion newVersion, IdeaVersion previousVersion, List<Long> deleteImageIds) {
