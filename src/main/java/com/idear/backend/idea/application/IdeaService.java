@@ -72,6 +72,8 @@ public class IdeaService {
 		IdeaVersion initialVersion = IdeaVersion.createInitialVersion(
 				request.getShortDescription(),
 				request.getDescription(),
+				request.getGithubUrl(),
+				request.getFigmaUrl(),
 				requestedAt
 		);
 		idea.addVersion(initialVersion);
@@ -113,11 +115,7 @@ public class IdeaService {
 				throw CustomException.of(ErrorCode.IDEA_FILE_IDEA_MISMATCH);
 			}
 
-			String userSignature = signatureData.getUserSignature();
-
-			if (!userSignature.startsWith("0x")) {
-				userSignature = "0x" + userSignature;
-			}
+			String userSignature = normalizeSignature(signatureData.getUserSignature());
 
 			String serverSignature = serverSignatureService.generateServerSignature(
 					ideaFile.getCommit(),
@@ -134,19 +132,84 @@ public class IdeaService {
 					serverSignature
 			);
 
-			registrationResults.add(FileRegistrationResult.builder()
-					.ideaFileId(ideaFile.getIdeaFileId())
-					.fileName(ideaFile.getOriginalFileName())
-					.fileHash(ideaFile.getFileHash())
-					.salt(ideaFile.getSalt())
-					.commit(ideaFile.getCommit())
-					.build());
+			registrationResults.add(FileRegistrationResult.of(ideaFile));
 		}
 
 		return IdeaRegistrationCompleteResponse.builder()
 				.ideaId(ideaId)
 				.registeredFiles(registrationResults)
 				.totalFiles(registrationResults.size())
+				.build();
+	}
+
+	@Transactional
+	public IdeaUpdateResponse updateIdea(
+			User user,
+			Long ideaId,
+			List<Long> deleteFileIds,
+			List<Long> deleteImageIds,
+			String shortDescription,
+			String description,
+			String githubUrl,
+			String figmaUrl,
+			List<MultipartFile> images,
+			List<MultipartFile> files
+	) throws IOException {
+		Idea idea = ideaRepository.findById(ideaId)
+				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
+
+		if (!idea.getUser().getUserId().equals(user.getUserId())) {
+			throw CustomException.of(ErrorCode.USER_NOT_OWNER);
+		}
+
+		IdeaVersion latestVersion = ideaVersionRepository
+				.findLatestByIdeaWithFilesAndImages(idea)
+				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_VERSION_NOT_FOUND));
+
+		boolean hasFileChanges = (deleteFileIds != null && !deleteFileIds.isEmpty())
+				|| hasNonEmptyFiles(files);
+
+		IdeaVersion targetVersion;
+		List<FileHashInfo> fileHashInfoList = new ArrayList<>();
+		LocalDateTime updatedAt = LocalDateTime.now();
+		Long timestamp = updatedAt.toEpochSecond(ZoneOffset.UTC);
+
+		if (hasFileChanges) {
+			Integer maxVersionNumber = ideaVersionRepository
+					.findMaxVersionNumberByIdea(idea)
+					.orElse(0);
+
+			IdeaVersion newVersion = IdeaVersion.createNewVersion(
+					latestVersion,
+					maxVersionNumber + 1
+			);
+			idea.addVersion(newVersion);
+			newVersion = ideaVersionRepository.save(newVersion);
+
+			copyImagesFromPreviousVersion(newVersion, latestVersion, deleteImageIds);
+			copyFilesFromPreviousVersion(newVersion, latestVersion, deleteFileIds);
+
+			fileHashInfoList = processFiles(newVersion, files, timestamp);
+			newVersion.updateMetadataIfNeeded(shortDescription, description, githubUrl, figmaUrl);
+
+			targetVersion = newVersion;
+		} else {
+			latestVersion.updateMetadataIfNeeded(shortDescription, description, githubUrl, figmaUrl);
+			targetVersion = latestVersion;
+		}
+
+		// 메타만 변경 시 이미지 관계 제거
+		if (!hasFileChanges && deleteImageIds != null && !deleteImageIds.isEmpty()) {
+			targetVersion.removeImagesByIds(deleteImageIds);
+		}
+
+		processImages(targetVersion, images);
+
+		return IdeaUpdateResponse.builder()
+				.ideaId(ideaId)
+				.versionNumber(targetVersion.getVersionNumber())
+				.updatedAt(updatedAt)
+				.files(fileHashInfoList)
 				.build();
 	}
 
@@ -260,99 +323,30 @@ public class IdeaService {
 		return fileHashInfoList;
 	}
 
-	@Transactional
-	public IdeaUpdateResponse updateIdea(
-		User user,
-		Long ideaId,
-		List<Long> deleteFileIds,
-		List<Long> deleteImageIds,
-		String shortDescription,
-		String description,
-		List<MultipartFile> images,
-		List<MultipartFile> files
-	) throws IOException {
-		Idea idea = ideaRepository.findById(ideaId)
-				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
-
-		if (!idea.getUser().getUserId().equals(user.getUserId())) {
-			throw CustomException.of(ErrorCode.USER_NOT_OWNER);
+	private String normalizeSignature(String signature) {
+		if (signature != null && !signature.startsWith("0x")) {
+			return "0x" + signature;
 		}
+		return signature;
+	}
 
-		IdeaVersion latestVersion = ideaVersionRepository
-				.findLatestByIdeaWithFilesAndImages(idea)
-				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_VERSION_NOT_FOUND));
-
-		boolean hasFileChanges = (deleteFileIds != null && !deleteFileIds.isEmpty())
-				|| hasNonEmptyFiles(files);
-
-		IdeaVersion targetVersion;
-		List<FileHashInfo> fileHashInfoList = new ArrayList<>();
-		LocalDateTime updatedAt = LocalDateTime.now();
-		Long timestamp = updatedAt.toEpochSecond(ZoneOffset.UTC);
-
-		if (hasFileChanges) {
-			Integer maxVersionNumber = ideaVersionRepository
-				.findMaxVersionNumberByIdea(idea)
-				.orElse(0);
-
-			IdeaVersion newVersion = IdeaVersion.createNewVersion(
-				latestVersion,
-				maxVersionNumber + 1
-			);
-			idea.addVersion(newVersion);
-			newVersion = ideaVersionRepository.save(newVersion);
-
-			// 이미지 참조 복사 (Join Entity)
-			Set<IdeaImage> imagesToKeep = new HashSet<>(latestVersion.getImages());
-			if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
-				imagesToKeep.removeIf(img -> deleteImageIds.contains(img.getIdeaImageId()));
-			}
-			for (IdeaImage image : imagesToKeep) {
-				newVersion.addImage(image);
-			}
-
-			// 파일 참조 복사 (Join Entity)
-			Set<IdeaFile> filesToKeep = new HashSet<>(latestVersion.getFiles());
-			if (deleteFileIds != null && !deleteFileIds.isEmpty()) {
-				filesToKeep.removeIf(file -> deleteFileIds.contains(file.getIdeaFileId()));
-			}
-			for (IdeaFile file : filesToKeep) {
-				newVersion.addFile(file);
-			}
-
-			fileHashInfoList = processFiles(newVersion, files, timestamp);
-
-			if (shortDescription != null || description != null) {
-				newVersion.updateMetadata(
-					shortDescription != null ? shortDescription : newVersion.getShortDescription(),
-					description != null ? description : newVersion.getDescription()
-				);
-			}
-
-			targetVersion = newVersion;
-		} else {
-			if (shortDescription != null || description != null) {
-				latestVersion.updateMetadata(
-					shortDescription != null ? shortDescription : latestVersion.getShortDescription(),
-					description != null ? description : latestVersion.getDescription()
-				);
-			}
-
-			targetVersion = latestVersion;
+	private void copyImagesFromPreviousVersion(IdeaVersion newVersion, IdeaVersion previousVersion, List<Long> deleteImageIds) {
+		Set<IdeaImage> imagesToKeep = new HashSet<>(previousVersion.getImages());
+		if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
+			imagesToKeep.removeIf(img -> deleteImageIds.contains(img.getIdeaImageId()));
 		}
-
-		// 메타만 변경 시 이미지 관계 제거
-		if (!hasFileChanges && deleteImageIds != null && !deleteImageIds.isEmpty()) {
-			targetVersion.removeImagesByIds(deleteImageIds);
+		for (IdeaImage image : imagesToKeep) {
+			newVersion.addImage(image);
 		}
+	}
 
-		processImages(targetVersion, images);
-
-		return IdeaUpdateResponse.builder()
-			.ideaId(ideaId)
-			.versionNumber(targetVersion.getVersionNumber())
-			.updatedAt(updatedAt)
-			.files(fileHashInfoList)
-			.build();
+	private void copyFilesFromPreviousVersion(IdeaVersion newVersion, IdeaVersion previousVersion, List<Long> deleteFileIds) {
+		Set<IdeaFile> filesToKeep = new HashSet<>(previousVersion.getFiles());
+		if (deleteFileIds != null && !deleteFileIds.isEmpty()) {
+			filesToKeep.removeIf(file -> deleteFileIds.contains(file.getIdeaFileId()));
+		}
+		for (IdeaFile file : filesToKeep) {
+			newVersion.addFile(file);
+		}
 	}
 }

@@ -40,6 +40,12 @@ public class IdeaVersion {
     @Lob
     private String description;
 
+    @Column(length = 255)
+    private String githubUrl;
+
+    @Column(length = 255)
+    private String figmaUrl;
+
     @OneToMany(mappedBy = "ideaVersion", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<IdeaVersionFile> versionFiles = new HashSet<>();
@@ -55,12 +61,16 @@ public class IdeaVersion {
     public static IdeaVersion createInitialVersion(
             String shortDescription,
             String description,
+            String githubUrl,
+            String figmaUrl,
             LocalDateTime requestedAt
     ) {
         return IdeaVersion.builder()
                 .versionNumber(1)
                 .shortDescription(shortDescription)
                 .description(description)
+                .githubUrl(githubUrl)
+                .figmaUrl(figmaUrl)
                 .requestedAt(requestedAt)
                 .build();
     }
@@ -73,13 +83,17 @@ public class IdeaVersion {
                 .versionNumber(newVersionNumber)
                 .shortDescription(previousVersion.shortDescription)
                 .description(previousVersion.description)
+                .githubUrl(previousVersion.githubUrl)
+                .figmaUrl(previousVersion.figmaUrl)
                 .requestedAt(LocalDateTime.now())
                 .build();
     }
 
-    public void updateMetadata(String shortDescription, String description) {
-        this.shortDescription = shortDescription;
-        this.description = description;
+    public void updateMetadataIfNeeded(String shortDescription, String description, String githubUrl, String figmaUrl) {
+        this.shortDescription = shortDescription != null ? shortDescription : this.shortDescription;
+        this.description = description != null ? description : this.description;
+        this.githubUrl = githubUrl != null ? githubUrl : this.githubUrl;
+        this.figmaUrl = figmaUrl != null ? figmaUrl : this.figmaUrl;
     }
 
     public void addFile(IdeaFile file) {

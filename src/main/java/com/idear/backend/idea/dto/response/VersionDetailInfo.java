@@ -16,6 +16,8 @@ public class VersionDetailInfo {
 	private Integer versionNumber;
 	private String shortDescription;
 	private String description;
+	private String githubUrl;
+	private String figmaUrl;
 	private LocalDateTime requestedAt;
 	private List<IdeaFileInfo> files;
 	private List<IdeaImageInfo> images;
@@ -34,6 +36,8 @@ public class VersionDetailInfo {
 				.versionNumber(version.getVersionNumber())
 				.shortDescription(version.getShortDescription())
 				.description(version.getDescription())
+				.githubUrl(version.getGithubUrl())
+				.figmaUrl(version.getFigmaUrl())
 				.requestedAt(version.getRequestedAt())
 				.files(fileInfos)
 				.images(imageInfos)
