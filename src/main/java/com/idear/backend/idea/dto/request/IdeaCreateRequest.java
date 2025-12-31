@@ -12,4 +12,6 @@ public class IdeaCreateRequest {
 	private String shortDescription;
 	@NotNull
 	private String description;
+	private String githubUrl;
+	private String figmaUrl;
 }

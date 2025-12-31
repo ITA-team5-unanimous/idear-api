@@ -10,4 +10,6 @@ public class IdeaUpdateRequest {
 	private List<Long> deleteImageIds;
 	private String shortDescription;
 	private String description;
+	private String githubUrl;
+	private String figmaUrl;
 }

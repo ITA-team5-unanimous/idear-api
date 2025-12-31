@@ -17,6 +17,8 @@ public class IdeaSummaryResponse {
 	private Integer versionNumber;
 	private String title;
 	private String shortDescription;
+	private String githubUrl;
+	private String figmaUrl;
 	private LocalDateTime requestedAt;
 	private List<IdeaImageInfo> images;
 
@@ -31,6 +33,8 @@ public class IdeaSummaryResponse {
 				.versionNumber(version.getVersionNumber())
 				.title(idea.getTitle())
 				.shortDescription(version.getShortDescription())
+				.githubUrl(version.getGithubUrl())
+				.figmaUrl(version.getFigmaUrl())
 				.requestedAt(version.getRequestedAt())
 				.images(imageResponses)
 				.build();

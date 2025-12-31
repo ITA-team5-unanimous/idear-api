@@ -81,10 +81,12 @@ public class IdeaController {
 		List<Long> deleteImageIds = ideaUpdateRequest != null ? ideaUpdateRequest.getDeleteImageIds() : null;
 		String shortDescription = ideaUpdateRequest != null ? ideaUpdateRequest.getShortDescription() : null;
 		String description = ideaUpdateRequest != null ? ideaUpdateRequest.getDescription() : null;
+		String githubUrl = ideaUpdateRequest != null ? ideaUpdateRequest.getGithubUrl() : null;
+		String figmaUrl = ideaUpdateRequest != null ? ideaUpdateRequest.getFigmaUrl() : null;
 
 		IdeaUpdateResponse response = ideaService.updateIdea(
 				user, ideaId, deleteFileIds, deleteImageIds,
-				shortDescription, description, images, files
+				shortDescription, description, githubUrl, figmaUrl, images, files
 		);
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
