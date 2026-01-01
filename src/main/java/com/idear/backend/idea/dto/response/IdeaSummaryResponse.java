@@ -16,6 +16,8 @@ public class IdeaSummaryResponse {
 	private Long ideaVersionId;
 	private Integer versionNumber;
 	private String title;
+	private String host;
+	private Long dDay;
 	private String shortDescription;
 	private String githubUrl;
 	private String figmaUrl;
@@ -27,11 +29,20 @@ public class IdeaSummaryResponse {
 				.map(IdeaImageInfo::of)
 				.collect(Collectors.toList());
 
+		String host = null;
+		Long dDay = null;
+		if (idea.getContest() != null) {
+			host = idea.getContest().getHost();
+			dDay = idea.getContest().getDDay();
+		}
+
 		return IdeaSummaryResponse.builder()
 				.ideaId(idea.getIdeaId())
 				.ideaVersionId(version.getIdeaVersionId())
 				.versionNumber(version.getVersionNumber())
 				.title(idea.getTitle())
+				.host(host)
+				.dDay(dDay)
 				.shortDescription(version.getShortDescription())
 				.githubUrl(version.getGithubUrl())
 				.figmaUrl(version.getFigmaUrl())
