@@ -1,5 +1,6 @@
 package com.idear.backend.idea.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.idear.backend.idea.domain.Idea;
 import com.idear.backend.idea.domain.IdeaVersion;
 import lombok.Builder;
@@ -17,7 +18,7 @@ public class IdeaSummaryResponse {
 	private Integer versionNumber;
 	private String title;
 	private String host;
-	private Long dDay;
+	private Long dday;
 	private String shortDescription;
 	private String githubUrl;
 	private String figmaUrl;
@@ -42,7 +43,7 @@ public class IdeaSummaryResponse {
 				.versionNumber(version.getVersionNumber())
 				.title(idea.getTitle())
 				.host(host)
-				.dDay(dDay)
+				.dday(dDay)
 				.shortDescription(version.getShortDescription())
 				.githubUrl(version.getGithubUrl())
 				.figmaUrl(version.getFigmaUrl())
