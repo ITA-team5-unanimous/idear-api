@@ -116,6 +116,8 @@ jobs:
                  -e GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }} \
                  -e BLOCKCHAIN_GATEWAY_URL=http://idear-chain:3000 \
                  -e SERVER_PRIVATE_KEY=${{ secrets.SERVER_PRIVATE_KEY }} \
+                 -e SPRING_MAIL_USERNAME=${{ secrets.SPRING_MAIL_USERNAME }} \
+                 -e SPRING_MAIL_PASSWORD=${{ secrets.SPRING_MAIL_PASSWORD }} \
                  ${IMAGE_NAME}
 
             sudo docker system prune -a -f
