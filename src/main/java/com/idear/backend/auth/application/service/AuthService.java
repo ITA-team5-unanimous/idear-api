@@ -14,7 +14,6 @@ import static com.idear.backend.global.exception.ErrorCode.INVALID_REFRESH_TOKEN
 
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class AuthService {
 
     private final RefreshTokenRepository refreshTokenRepository;

@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +29,7 @@ public class UserController {
 		description = "현재 로그인한 사용자의 정보를 조회합니다."
 	)
 	@GetMapping
-	public ResponseEntity<?> getUserInfo(
+	public ResponseEntity<ApiResponse<UserInfoResponse>> getUserInfo(
 		@Parameter(hidden = true) @ValidatedUser User user
 	) {
 		UserInfoResponse response = userService.getUserInfo(user);
@@ -40,7 +41,7 @@ public class UserController {
 		description = "현재 로그인한 사용자의 이름을 변경합니다."
 	)
 	@PatchMapping("/name")
-	public ResponseEntity<?> updateName(
+	public ResponseEntity<ApiResponse<Void>> updateName(
 		@Parameter(hidden = true) @ValidatedUser User user,
 		@Valid @RequestBody UpdateNameRequest request
 	) {
@@ -53,7 +54,7 @@ public class UserController {
 		description = "블록체인 서명용 사용자 퍼블릭 키를 등록합니다."
 	)
 	@PostMapping("/public-key")
-	public ResponseEntity<?> registerPublicKey(
+	public ResponseEntity<ApiResponse<Void>> registerPublicKey(
 		@Parameter(hidden = true) @ValidatedUser User user,
 		@Valid @RequestBody RegisterPublicKeyRequest request
 	) {
@@ -66,7 +67,7 @@ public class UserController {
 		description = "현재 로그인한 사용자를 회원 탈퇴합니다.(소프트 삭제처리)"
 	)
 	@DeleteMapping
-	public ResponseEntity<?> deleteUser(
+	public ResponseEntity<ApiResponse<Void>> deleteUser(
 		@Parameter(hidden = true) @ValidatedUser User user
 	) {
 		userService.deleteUser(user);

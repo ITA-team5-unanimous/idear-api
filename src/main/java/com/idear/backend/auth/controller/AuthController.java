@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class AuthController {
 
     private final AuthService authService;
@@ -29,7 +28,7 @@ public class AuthController {
         description = "Refresh Token을 사용하여 새로운 Access Token과 Refresh Token을 발급받습니다."
     )
     @PostMapping("/reissue")
-    public ResponseEntity<?> reissue(
+    public ResponseEntity<ApiResponse<TokenResponse>> reissue(
         @Valid @RequestBody RefreshTokenRequest request
     ) {
         TokenResponse tokenResponse = authService.reissue(request.getRefresh());

@@ -8,6 +8,7 @@ import com.idear.backend.global.exception.ErrorCode;
 import com.idear.backend.idea.domain.Idea;
 import com.idear.backend.idea.domain.IdeaFile;
 import com.idear.backend.idea.domain.IdeaImage;
+import com.idear.backend.idea.domain.IdeaVersion;
 import com.idear.backend.idea.dto.request.FileSignatureRequest;
 import com.idear.backend.idea.dto.request.IdeaCreateRequest;
 import com.idear.backend.idea.dto.request.SignatureData;
@@ -15,6 +16,7 @@ import com.idear.backend.idea.dto.response.*;
 import com.idear.backend.idea.infrastructure.repository.IdeaFileRepository;
 import com.idear.backend.idea.infrastructure.repository.IdeaImageRepository;
 import com.idear.backend.idea.infrastructure.repository.IdeaRepository;
+import com.idear.backend.idea.infrastructure.repository.IdeaVersionRepository;
 import com.idear.backend.idea.util.HashUtil;
 import com.idear.backend.idea.util.ServerSignatureService;
 import com.idear.backend.user.domain.User;
@@ -26,9 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 public class IdeaService {
 
 	private final IdeaRepository ideaRepository;
+	private final IdeaVersionRepository ideaVersionRepository;
 	private final IdeaFileRepository ideaFileRepository;
 	private final IdeaImageRepository ideaImageRepository;
 	private final FileStorageService fileStorageService;
@@ -64,14 +65,22 @@ public class IdeaService {
 				user,
 				contest,
 				request.getTitle(),
-				request.getShortDescription(),
-				request.getDescription(),
 				requestedAt
 		);
 		idea = ideaRepository.save(idea);
 
-		processImages(idea, images);
-		List<FileHashInfo> fileHashInfoList = processFiles(idea, files, requestTimestamp);
+		IdeaVersion initialVersion = IdeaVersion.createInitialVersion(
+				request.getShortDescription(),
+				request.getDescription(),
+				request.getGithubUrl(),
+				request.getFigmaUrl(),
+				requestedAt
+		);
+		idea.addVersion(initialVersion);
+		initialVersion = ideaVersionRepository.save(initialVersion);
+
+		processImages(initialVersion, images);
+		List<FileHashInfo> fileHashInfoList = processFiles(initialVersion, files, requestTimestamp);
 
 		return IdeaRegistrationInitResponse.builder()
 				.ideaId(idea.getIdeaId())
@@ -99,15 +108,14 @@ public class IdeaService {
 			IdeaFile ideaFile = ideaFileRepository.findById(signatureData.getIdeaFileId())
 					.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_FILE_NOT_FOUND));
 
-			if (!ideaFile.getIdea().getIdeaId().equals(ideaId)) {
+			// 현재 Idea의 모든 버전에서 이 파일이 포함되어 있는지 확인
+			boolean fileOwnedByIdea = idea.getVersions().stream()
+					.anyMatch(v -> v.getFiles().contains(ideaFile));
+			if (!fileOwnedByIdea) {
 				throw CustomException.of(ErrorCode.IDEA_FILE_IDEA_MISMATCH);
 			}
 
-			String userSignature = signatureData.getUserSignature();
-
-			if (!userSignature.startsWith("0x")) {
-				userSignature = "0x" + userSignature;
-			}
+			String userSignature = normalizeSignature(signatureData.getUserSignature());
 
 			String serverSignature = serverSignatureService.generateServerSignature(
 					ideaFile.getCommit(),
@@ -124,13 +132,7 @@ public class IdeaService {
 					serverSignature
 			);
 
-			registrationResults.add(FileRegistrationResult.builder()
-					.ideaFileId(ideaFile.getIdeaFileId())
-					.fileName(ideaFile.getOriginalFileName())
-					.fileHash(ideaFile.getFileHash())
-					.salt(ideaFile.getSalt())
-					.commit(ideaFile.getCommit())
-					.build());
+			registrationResults.add(FileRegistrationResult.of(ideaFile));
 		}
 
 		return IdeaRegistrationCompleteResponse.builder()
@@ -140,52 +142,133 @@ public class IdeaService {
 				.build();
 	}
 
+	@Transactional
+	public IdeaUpdateResponse updateIdea(
+			User user,
+			Long ideaId,
+			List<Long> deleteFileIds,
+			List<Long> deleteImageIds,
+			String shortDescription,
+			String description,
+			String githubUrl,
+			String figmaUrl,
+			List<MultipartFile> images,
+			List<MultipartFile> files
+	) throws IOException {
+		Idea idea = ideaRepository.findById(ideaId)
+				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
+
+		if (!idea.getUser().getUserId().equals(user.getUserId())) {
+			throw CustomException.of(ErrorCode.USER_NOT_OWNER);
+		}
+
+		IdeaVersion latestVersion = ideaVersionRepository
+				.findLatestByIdeaWithFilesAndImages(idea)
+				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_VERSION_NOT_FOUND));
+
+		boolean hasFileChanges = (deleteFileIds != null && !deleteFileIds.isEmpty())
+				|| hasNonEmptyFiles(files);
+
+		IdeaVersion targetVersion;
+		List<FileHashInfo> fileHashInfoList = new ArrayList<>();
+		LocalDateTime updatedAt = LocalDateTime.now();
+		Long timestamp = updatedAt.toEpochSecond(ZoneOffset.UTC);
+
+		if (hasFileChanges) {
+			Integer maxVersionNumber = ideaVersionRepository
+					.findMaxVersionNumberByIdea(idea)
+					.orElse(0);
+
+			IdeaVersion newVersion = IdeaVersion.createNewVersion(
+					latestVersion,
+					maxVersionNumber + 1
+			);
+			idea.addVersion(newVersion);
+			newVersion = ideaVersionRepository.save(newVersion);
+
+			copyImagesFromPreviousVersion(newVersion, latestVersion, deleteImageIds);
+			copyFilesFromPreviousVersion(newVersion, latestVersion, deleteFileIds);
+
+			fileHashInfoList = processFiles(newVersion, files, timestamp);
+			newVersion.updateMetadataIfNeeded(shortDescription, description, githubUrl, figmaUrl);
+
+			targetVersion = newVersion;
+		} else {
+			latestVersion.updateMetadataIfNeeded(shortDescription, description, githubUrl, figmaUrl);
+			targetVersion = latestVersion;
+		}
+
+		// 메타만 변경 시 이미지 관계 제거
+		if (!hasFileChanges && deleteImageIds != null && !deleteImageIds.isEmpty()) {
+			targetVersion.removeImagesByIds(deleteImageIds);
+		}
+
+		processImages(targetVersion, images);
+
+		return IdeaUpdateResponse.builder()
+				.ideaId(ideaId)
+				.versionNumber(targetVersion.getVersionNumber())
+				.updatedAt(updatedAt)
+				.files(fileHashInfoList)
+				.build();
+	}
+
 	@Transactional(readOnly = true)
 	public List<IdeaSummaryResponse> getIdeasByUser(User user) {
 		List<Idea> ideas = ideaRepository.findAllByUser(user);
 
 		return ideas.stream()
-				.map(IdeaSummaryResponse::of)
+				.map(idea -> {
+					IdeaVersion latestVersion = ideaVersionRepository
+							.findTopByIdeaOrderByVersionNumberDesc(idea)
+							.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_VERSION_NOT_FOUND));
+					return IdeaSummaryResponse.of(idea, latestVersion);
+				})
 				.collect(Collectors.toList());
 	}
 
 	@Transactional(readOnly = true)
-	public IdeaDetailResponse getIdeaDetail(User user, Long ideaId) {
+	public IdeaWithVersionsResponse getIdeaVersions(User user, Long ideaId) {
 		Idea idea = ideaRepository.findById(ideaId)
-			.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
+				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
 
 		if (!idea.getUser().getUserId().equals(user.getUserId())) {
 			throw CustomException.of(ErrorCode.ACCESS_DENIED);
 		}
 
-		return IdeaDetailResponse.of(idea);
+		List<IdeaVersion> versions = ideaVersionRepository.findAllByIdeaOrderByVersionNumberDesc(idea);
+
+		return IdeaWithVersionsResponse.of(idea, versions);
 	}
 
 	@Transactional
 	public void deleteIdea(User user, Long ideaId) {
 		Idea idea = ideaRepository.findById(ideaId)
-			.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
+				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
 
 		if (!idea.getUser().getUserId().equals(user.getUserId())) {
 			throw CustomException.of(ErrorCode.ACCESS_DENIED);
 		}
 
-		deleteIdeaFilesFromStorage(idea.getFiles());
-		deleteIdeaImagesFromStorage(idea.getImages());
-
-		ideaFileRepository.deleteAll(idea.getFiles());
-		ideaImageRepository.deleteAll(idea.getImages());
 		ideaRepository.delete(idea);
 	}
 
-	private void processImages(Idea idea, List<MultipartFile> images) throws IOException {
+	private boolean hasNonEmptyFiles(List<MultipartFile> files) {
+		if (files == null || files.isEmpty()) {
+			return false;
+		}
+		return files.stream().anyMatch(file -> file != null && !file.isEmpty());
+	}
+
+	private void processImages(IdeaVersion ideaVersion, List<MultipartFile> images) throws IOException {
 		if (images == null || images.isEmpty()) {
 			return;
 		}
 
 		for (MultipartFile image : images) {
 			if (!image.isEmpty()) {
-				String fileName = UUID.randomUUID().toString();
+				String extension = getFileExtension(image.getOriginalFilename());
+				String fileName = UUID.randomUUID() + extension;
 				String filePath = fileStorageService.uploadFile(image, fileName, "image");
 
 				IdeaImage ideaImage = IdeaImage.of(
@@ -194,12 +277,13 @@ public class IdeaService {
 						filePath
 				);
 
-				idea.addImage(ideaImage);
+				ideaImage = ideaImageRepository.save(ideaImage);
+				ideaVersion.addImage(ideaImage);
 			}
 		}
 	}
 
-	private List<FileHashInfo> processFiles(Idea idea, List<MultipartFile> files, Long requestTimestamp) throws IOException {
+	private List<FileHashInfo> processFiles(IdeaVersion ideaVersion, List<MultipartFile> files, Long requestTimestamp) throws IOException {
 		List<FileHashInfo> fileHashInfoList = new ArrayList<>();
 
 		if (files == null || files.isEmpty()) {
@@ -208,7 +292,8 @@ public class IdeaService {
 
 		for (MultipartFile file : files) {
 			if (!file.isEmpty()) {
-				String fileName = UUID.randomUUID().toString();
+				String extension = getFileExtension(file.getOriginalFilename());
+				String fileName = UUID.randomUUID() + extension;
 				String filePath = fileStorageService.uploadFile(file, fileName, "file");
 
 				String fileHash = hashUtil.generateFileHash(file);
@@ -225,7 +310,7 @@ public class IdeaService {
 						requestTimestamp
 				);
 
-				idea.addFile(ideaFile);
+				ideaVersion.addFile(ideaFile);
 				ideaFile = ideaFileRepository.save(ideaFile);
 
 				fileHashInfoList.add(FileHashInfo.builder()
@@ -240,15 +325,37 @@ public class IdeaService {
 		return fileHashInfoList;
 	}
 
-	private void deleteIdeaFilesFromStorage(List<IdeaFile> files) {
-		for (IdeaFile file : files) {
-			fileStorageService.deleteFile(file.getFileName(), "file");
+	private String normalizeSignature(String signature) {
+		if (signature != null && !signature.startsWith("0x")) {
+			return "0x" + signature;
+		}
+		return signature;
+	}
+
+	private String getFileExtension(String originalFilename) {
+		if (originalFilename == null || !originalFilename.contains(".")) {
+			return "";
+		}
+		return originalFilename.substring(originalFilename.lastIndexOf("."));
+	}
+
+	private void copyImagesFromPreviousVersion(IdeaVersion newVersion, IdeaVersion previousVersion, List<Long> deleteImageIds) {
+		Set<IdeaImage> imagesToKeep = new HashSet<>(previousVersion.getImages());
+		if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
+			imagesToKeep.removeIf(img -> deleteImageIds.contains(img.getIdeaImageId()));
+		}
+		for (IdeaImage image : imagesToKeep) {
+			newVersion.addImage(image);
 		}
 	}
 
-	private void deleteIdeaImagesFromStorage(List<IdeaImage> images) {
-		for (IdeaImage image : images) {
-			fileStorageService.deleteFile(image.getFileName(), "image");
+	private void copyFilesFromPreviousVersion(IdeaVersion newVersion, IdeaVersion previousVersion, List<Long> deleteFileIds) {
+		Set<IdeaFile> filesToKeep = new HashSet<>(previousVersion.getFiles());
+		if (deleteFileIds != null && !deleteFileIds.isEmpty()) {
+			filesToKeep.removeIf(file -> deleteFileIds.contains(file.getIdeaFileId()));
+		}
+		for (IdeaFile file : filesToKeep) {
+			newVersion.addFile(file);
 		}
 	}
 }

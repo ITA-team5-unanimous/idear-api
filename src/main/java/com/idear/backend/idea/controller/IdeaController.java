@@ -5,10 +5,8 @@ import com.idear.backend.global.annotation.ValidatedUser;
 import com.idear.backend.idea.application.IdeaService;
 import com.idear.backend.idea.dto.request.FileSignatureRequest;
 import com.idear.backend.idea.dto.request.IdeaCreateRequest;
-import com.idear.backend.idea.dto.response.IdeaDetailResponse;
-import com.idear.backend.idea.dto.response.IdeaRegistrationCompleteResponse;
-import com.idear.backend.idea.dto.response.IdeaRegistrationInitResponse;
-import com.idear.backend.idea.dto.response.IdeaSummaryResponse;
+import com.idear.backend.idea.dto.request.IdeaUpdateRequest;
+import com.idear.backend.idea.dto.response.*;
 import com.idear.backend.user.domain.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -64,6 +62,36 @@ public class IdeaController {
 	}
 
 	@Operation(
+			summary = "아이디어 수정",
+			description = "아이디어의 파일 및 메타데이터를 수정합니다. 파일 변경 시 새 버전 생성, 메타만 변경 시 최신 버전 수정."
+	)
+	@PatchMapping(value = "/{ideaId}", consumes = {"multipart/form-data"})
+	public ResponseEntity<ApiResponse<IdeaUpdateResponse>> updateIdea(
+			@Parameter(hidden = true) @ValidatedUser User user,
+			@Parameter(description = "아이디어 ID", required = true, example = "1")
+			@PathVariable("ideaId") Long ideaId,
+			@Parameter(description = "수정 정보 (삭제 대상 파일/이미지 ID, 메타데이터)")
+			@RequestPart(value = "ideaData", required = false) IdeaUpdateRequest ideaUpdateRequest,
+			@Parameter(description = "추가할 이미지 목록")
+			@RequestPart(value = "images", required = false) List<MultipartFile> images,
+			@Parameter(description = "추가할 파일 목록")
+			@RequestPart(value = "files", required = false) List<MultipartFile> files
+	) throws IOException {
+		List<Long> deleteFileIds = ideaUpdateRequest != null ? ideaUpdateRequest.getDeleteFileIds() : null;
+		List<Long> deleteImageIds = ideaUpdateRequest != null ? ideaUpdateRequest.getDeleteImageIds() : null;
+		String shortDescription = ideaUpdateRequest != null ? ideaUpdateRequest.getShortDescription() : null;
+		String description = ideaUpdateRequest != null ? ideaUpdateRequest.getDescription() : null;
+		String githubUrl = ideaUpdateRequest != null ? ideaUpdateRequest.getGithubUrl() : null;
+		String figmaUrl = ideaUpdateRequest != null ? ideaUpdateRequest.getFigmaUrl() : null;
+
+		IdeaUpdateResponse response = ideaService.updateIdea(
+				user, ideaId, deleteFileIds, deleteImageIds,
+				shortDescription, description, githubUrl, figmaUrl, images, files
+		);
+		return ResponseEntity.ok(ApiResponse.success(response));
+	}
+
+	@Operation(
 		summary = "내 아이디어 목록 조회",
 		description = "현재 로그인한 사용자가 등록한 모든 아이디어 목록을 조회합니다."
 	)
@@ -77,15 +105,15 @@ public class IdeaController {
 
 	@Operation(
 		summary = "아이디어 상세 조회",
-		description = "특정 아이디어의 상세 정보를 조회합니다. 블록체인 등록 정보 및 첨부 파일 목록을 포함합니다."
+		description = "특정 아이디어의 모든 버전에 대해 최신순으로 조회합니다."
 	)
 	@GetMapping("/{ideaId}")
-	public ResponseEntity<ApiResponse<IdeaDetailResponse>> getIdeaDetail(
+	public ResponseEntity<ApiResponse<IdeaWithVersionsResponse>> getIdea(
 			@Parameter(hidden = true) @ValidatedUser User user,
 			@Parameter(description = "조회할 아이디어 ID", required = true, example = "1")
 			@PathVariable("ideaId") Long ideaId
 	) {
-		IdeaDetailResponse response = ideaService.getIdeaDetail(user, ideaId);
+		IdeaWithVersionsResponse response = ideaService.getIdeaVersions(user, ideaId);
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
 

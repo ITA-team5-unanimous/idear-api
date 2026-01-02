@@ -39,19 +39,9 @@ public class Idea {
 	@Column(nullable = false, length = 100)
 	private String title;
 
-	@Column(length = 255)
-	private String shortDescription;
-
-	@Lob
-	private String description;
-
 	@OneToMany(mappedBy = "idea", cascade = CascadeType.ALL, orphanRemoval = true)
 	@Builder.Default
-	private List<IdeaFile> files = new ArrayList<>();
-
-	@OneToMany(mappedBy = "idea", cascade = CascadeType.ALL, orphanRemoval = true)
-	@Builder.Default
-	private List<IdeaImage> images = new ArrayList<>();
+	private List<IdeaVersion> versions = new ArrayList<>();
 
 	private LocalDateTime requestedAt;
 
@@ -61,27 +51,18 @@ public class Idea {
 			User user,
 			Contest contest,
 			String title,
-			String shortDescription,
-			String description,
 			LocalDateTime requestedAt
 	) {
 		return Idea.builder()
 				.user(user)
 				.contest(contest)
 				.title(title)
-				.shortDescription(shortDescription)
-				.description(description)
 				.requestedAt(requestedAt)
 				.build();
 	}
 
-	public void addFile(IdeaFile file) {
-		files.add(file);
-		file.attachTo(this);
-	}
-
-	public void addImage(IdeaImage image) {
-		images.add(image);
-		image.attachTo(this);
+	public void addVersion(IdeaVersion version) {
+		versions.add(version);
+		version.setIdea(this);
 	}
 }

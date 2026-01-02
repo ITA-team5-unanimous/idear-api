@@ -25,10 +25,6 @@ public class IdeaImage {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long ideaImageId;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "idea_id", nullable = false)
-	private Idea idea;
-
 	@Column(nullable = false)
 	private String originalFileName;
 
@@ -50,9 +46,5 @@ public class IdeaImage {
 				.fileName(fileName)
 				.filePath(filePath)
 				.build();
-	}
-
-	protected void attachTo(Idea idea) {
-		this.idea = idea;
 	}
 }

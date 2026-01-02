@@ -8,6 +8,7 @@ import com.idear.backend.global.exception.ErrorCode;
 import com.idear.backend.idea.domain.IdeaFile;
 import com.idear.backend.user.domain.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,8 +43,8 @@ public class AlertService {
     }
 
     @Transactional
-    public void createRegistrationAlert(String content, IdeaFile ideaFile) {
-        Alert alert = Alert.ofRegistration(content, ideaFile);
+    public void createRegistrationAlert(String content, User user, Long ideaId, IdeaFile ideaFile) {
+        Alert alert = Alert.ofRegistration(content, user, ideaId, ideaFile);
         alertRepository.save(alert);
     }
 }
