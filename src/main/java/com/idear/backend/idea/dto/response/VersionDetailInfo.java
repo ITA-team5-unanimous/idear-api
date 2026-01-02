@@ -21,6 +21,7 @@ public class VersionDetailInfo {
 	private LocalDateTime requestedAt;
 	private List<IdeaFileInfo> files;
 	private List<IdeaImageInfo> images;
+	private List<TagResponse> tags;
 
 	public static VersionDetailInfo of(IdeaVersion version) {
 		List<IdeaFileInfo> fileInfos = version.getFiles().stream()
@@ -29,6 +30,10 @@ public class VersionDetailInfo {
 
 		List<IdeaImageInfo> imageInfos = version.getImages().stream()
 				.map(IdeaImageInfo::of)
+				.collect(Collectors.toList());
+
+		List<TagResponse> tagInfos = version.getTags().stream()
+				.map(TagResponse::of)
 				.collect(Collectors.toList());
 
 		return VersionDetailInfo.builder()
@@ -41,6 +46,7 @@ public class VersionDetailInfo {
 				.requestedAt(version.getRequestedAt())
 				.files(fileInfos)
 				.images(imageInfos)
+				.tags(tagInfos)
 				.build();
 	}
 }
