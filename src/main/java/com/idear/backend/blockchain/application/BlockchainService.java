@@ -3,6 +3,7 @@ package com.idear.backend.blockchain.application;
 import com.idear.backend.alert.application.service.AlertService;
 import com.idear.backend.blockchain.domain.RegistrationFailureReason;
 import com.idear.backend.blockchain.dto.request.RegistrationResultRequest;
+import com.idear.backend.email.service.EmailService;
 import com.idear.backend.global.exception.CustomException;
 import com.idear.backend.global.exception.ErrorCode;
 import com.idear.backend.idea.domain.Idea;
@@ -20,6 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -32,6 +36,7 @@ public class BlockchainService {
 	private final IdeaRepository ideaRepository;
 	private final AlertService alertService;
 	private final RestTemplate restTemplate;
+	private final EmailService emailService;
 
 	public void requestCommitRegistration(String commit, Long timestamp, String userSignature, String serverSignature) {
 		try {
@@ -96,8 +101,10 @@ public class BlockchainService {
 				idea.getIdeaId(),
 				ideaFile
 		);
-
-		// TODO: 성공 내용 이메일 전송
+		Map<String, Object> variables = new HashMap<>();
+		variables.put("userName", user.getName());
+		variables.put("registrationStatus", "성공");
+		emailService.sendEmailWithTemplate(user.getEmail(), "iDear - 블록체인 등록 결과", "blockchain-registration", variables);
 	}
 
 	private void handleRegistrationFailure(RegistrationResultRequest request, IdeaFile ideaFile){
@@ -125,7 +132,11 @@ public class BlockchainService {
 				ideaFile
 		);
 
-		// TODO: 실패 내용 이메일 전송
+		Map<String, Object> variables = new HashMap<>();
+		variables.put("userName", user.getName());
+		variables.put("registrationStatus", "실패");
+		variables.put("failureReason", reason.toString());
+		emailService.sendEmailWithTemplate(user.getEmail(), "iDear - 블록체인 등록 결과", "blockchain-registration", variables);
 	}
 
 	private record CommitRegistrationRequest(
