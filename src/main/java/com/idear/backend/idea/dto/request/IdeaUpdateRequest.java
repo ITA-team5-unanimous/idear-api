@@ -1,16 +1,14 @@
 package com.idear.backend.idea.dto.request;
 
-import jakarta.validation.constraints.NotNull;
+import java.util.List;
+
 import lombok.Getter;
 
 @Getter
-public class IdeaCreateRequest {
-	private Long contestId;
-	@NotNull
-	private String title;
-	@NotNull
+public class IdeaUpdateRequest {
+	private List<Long> deleteFileIds;
+	private List<Long> deleteImageIds;
 	private String shortDescription;
-	@NotNull
 	private String description;
 	private String githubUrl;
 	private String figmaUrl;

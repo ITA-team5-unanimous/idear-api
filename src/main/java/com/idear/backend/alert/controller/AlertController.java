@@ -8,6 +8,7 @@ import com.idear.backend.user.domain.User;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

@@ -2,6 +2,7 @@ package com.idear.backend.idea.util;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;

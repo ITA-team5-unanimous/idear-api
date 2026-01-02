@@ -18,7 +18,6 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     private final UserRepository userRepository;

@@ -27,8 +27,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableMethodSecurity
 @RequiredArgsConstructor
-@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnProperty(prefix = "idear.crawler", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;

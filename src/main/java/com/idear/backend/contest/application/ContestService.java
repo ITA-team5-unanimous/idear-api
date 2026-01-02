@@ -8,6 +8,7 @@ import com.idear.backend.contest.repository.ContestRepository;
 import com.idear.backend.global.exception.CustomException;
 import com.idear.backend.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

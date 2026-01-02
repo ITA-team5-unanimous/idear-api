@@ -33,6 +33,8 @@ public enum ErrorCode {
     IDEA_FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "I002", "존재하지 않는 아이디어 파일입니다."),
     IDEA_FILE_STATUS_MISMATCH(HttpStatus.CONFLICT, "I003", "아이디어 파일의 현재 상태가 요청과 일치하지 않습니다."),
     IDEA_FILE_IDEA_MISMATCH(HttpStatus.NOT_FOUND, "I004", "요청 아이디어에 해당하는 아이디어 파일이 아닙니다."),
+    IDEA_VERSION_NOT_FOUND(HttpStatus.NOT_FOUND, "I005", "존재하지 않는 아이디어 버전입니다."),
+    TAG_NOT_FOUND(HttpStatus.NOT_FOUND, "I006", "존재하지 않는 태그입니다."),
 
     // Crawling
     CRAWLING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "C001", "크롤링 중 오류가 발생했습니다."),
