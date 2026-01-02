@@ -9,6 +9,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,6 +54,10 @@ public class IdeaVersion {
     @OneToMany(mappedBy = "ideaVersion", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<IdeaVersionImage> versionImages = new HashSet<>();
+
+    @OneToMany(mappedBy = "ideaVersion", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<IdeaVersionTag> tags = new ArrayList<>();
 
     private LocalDateTime requestedAt;
 
@@ -123,6 +128,16 @@ public class IdeaVersion {
             return;
         }
         versionImages.removeIf(vi -> imageIds.contains(vi.getIdeaImage().getIdeaImageId()));
+    }
+
+    public IdeaVersionTag addTag(String tag) {
+        IdeaVersionTag versionTag = IdeaVersionTag.of(this, tag);
+        tags.add(versionTag);
+        return versionTag;
+    }
+
+    public boolean removeTagById(Long tagId) {
+        return tags.removeIf(t -> t.getIdeaVersionTagId() != null && t.getIdeaVersionTagId().equals(tagId));
     }
 
     protected void setIdea(Idea idea) {
