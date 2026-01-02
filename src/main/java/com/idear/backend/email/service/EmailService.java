@@ -46,7 +46,7 @@ public class EmailService {
 
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
-            CustomException.of(ErrorCode.EMAIL_SEND_FAILED);
+            throw CustomException.of(ErrorCode.EMAIL_SEND_FAILED);
         }
     }
 }
