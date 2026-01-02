@@ -38,7 +38,8 @@ public class SecurityConfig {
 
     private final String[] PUBLIC_POST = {
             "/auth/reissue",
-            "/blockchain/webhook"
+            "/blockchain/webhook",
+            "/test/**"
     };
 
     private final String[] PUBLIC_GET = {

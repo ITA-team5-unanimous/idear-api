@@ -47,7 +47,10 @@ public enum ErrorCode {
 
     // Blockchain
     REGISTRATION_STATUS_NOT_VALID(HttpStatus.BAD_REQUEST, "B001", "유효하지 않은 status 입니다."),
-    REGISTRATION_FAILURE_REASON_NOT_VALID(HttpStatus.BAD_REQUEST, "B002", "유효하지 않은 reason 입니다.");
+    REGISTRATION_FAILURE_REASON_NOT_VALID(HttpStatus.BAD_REQUEST, "B002", "유효하지 않은 reason 입니다."),
+
+    // Email
+    EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "E001", "이메일 전송에 실패했습니다.");
 
     private final HttpStatus status;
     private final String code;
