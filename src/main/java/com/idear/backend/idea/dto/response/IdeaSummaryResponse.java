@@ -19,6 +19,7 @@ public class IdeaSummaryResponse {
 	private String title;
 	private String host;
 	private Long dday;
+	private String contestImageUrl;
 	private String shortDescription;
 	private String githubUrl;
 	private String figmaUrl;
@@ -32,9 +33,11 @@ public class IdeaSummaryResponse {
 
 		String host = null;
 		Long dDay = null;
+		String contestImageUrl = null;
 		if (idea.getContest() != null) {
 			host = idea.getContest().getHost();
 			dDay = idea.getContest().getDDay();
+			contestImageUrl = idea.getContest().getImageUrl();
 		}
 
 		return IdeaSummaryResponse.builder()
@@ -44,6 +47,7 @@ public class IdeaSummaryResponse {
 				.title(idea.getTitle())
 				.host(host)
 				.dday(dDay)
+				.contestImageUrl(contestImageUrl)
 				.shortDescription(version.getShortDescription())
 				.githubUrl(version.getGithubUrl())
 				.figmaUrl(version.getFigmaUrl())
