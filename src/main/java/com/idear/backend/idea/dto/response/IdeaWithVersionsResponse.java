@@ -16,6 +16,7 @@ public class IdeaWithVersionsResponse {
 	private Long ideaId;
 	private String title;
 	private Long contestId;
+	private String contestTitle;
 	private LocalDateTime requestedAt;
 	private List<VersionDetailInfo> versions;
 
@@ -24,10 +25,18 @@ public class IdeaWithVersionsResponse {
 				.map(VersionDetailInfo::of)
 				.collect(Collectors.toList());
 
+		Long contestId = null;
+		String contestTitle = null;
+		if (idea.getContest() != null) {
+			contestId = idea.getContest().getContestId();
+			contestTitle = idea.getContest().getTitle();
+		}
+
 		return IdeaWithVersionsResponse.builder()
 				.ideaId(idea.getIdeaId())
 				.title(idea.getTitle())
-				.contestId(idea.getContest() != null ? idea.getContest().getContestId() : null)
+				.contestId(contestId)
+				.contestTitle(contestTitle)
 				.requestedAt(idea.getRequestedAt())
 				.versions(versionInfos)
 				.build();
