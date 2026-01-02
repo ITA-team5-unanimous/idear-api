@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>iDear - 문의 관리</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        a { text-decoration: none; color: #007bff; }
+    </style>
+</head>
+<body>
+    <h1>문의 목록</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>제목</th>
+                <th>문의자</th>
+                <th>문의일시</th>
+                <th>상태</th>
+                <th>상세보기</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="inquiry : ${inquiries}">
+                <td th:text="${inquiry.id}">1</td>
+                <td th:text="${inquiry.title}">문의 제목</td>
+                <td th:text="${inquiry.inquirerName} + ' (' + ${inquiry.inquirerEmail} + ')'">문의자 (email@example.com)</td>
+                <td th:text="${#temporals.format(inquiry.createdAt, 'yyyy-MM-dd HH:mm')}">2023-10-27 10:00</td>
+                <td th:text="${inquiry.status}">PENDING</td>
+                <td><a th:href="@{/admin/inquiries/{id}(id=${inquiry.id})}">답변하기</a></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

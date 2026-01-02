@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -29,7 +30,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String accessToken = tokenProvider.resolveToken(request);
 
-        if (accessToken != null) {
+        // admin pages
+        if (!StringUtils.hasText(accessToken)) {
+            accessToken = tokenProvider.resolveTokenFromCookie(request);
+        }
+
+        if (StringUtils.hasText(accessToken)) {
             Authentication authentication = tokenProvider.validateToken(accessToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }

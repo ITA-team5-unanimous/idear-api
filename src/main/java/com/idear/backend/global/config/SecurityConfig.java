@@ -44,7 +44,7 @@ public class SecurityConfig {
 
     private final String[] PUBLIC_GET = {
             "/",
-            "/test/hello",
+            "/test/**",
 
             // OAuth2
             "/oauth2/authorization/**",
@@ -52,6 +52,7 @@ public class SecurityConfig {
 
             // Swagger UI
             "/swagger-ui/**",
+            "/swagger-ui.html",
             "/v3/api-docs/**"
     };
 
@@ -85,6 +86,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, PUBLIC_POST).permitAll()
                         .requestMatchers(HttpMethod.GET, PUBLIC_GET).permitAll()
                         .requestMatchers(HttpMethod.PUT, PUBLIC_PUT).permitAll()
+                        .requestMatchers("/admin/login").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
 
