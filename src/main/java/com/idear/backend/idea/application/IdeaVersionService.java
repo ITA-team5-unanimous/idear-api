@@ -25,7 +25,7 @@ public class IdeaVersionService {
                 .orElseThrow(() -> CustomException.of(ErrorCode.IDEA_VERSION_NOT_FOUND));
 
         if (!version.getIdea().getUser().getUserId().equals(user.getUserId())) {
-            throw CustomException.of(ErrorCode.ACCESS_DENIED);
+            throw CustomException.of(ErrorCode.USER_NOT_OWNER);
         }
 
         IdeaVersionTag addedTag = version.addTag(tag);
