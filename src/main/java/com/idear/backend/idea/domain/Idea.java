@@ -36,9 +36,6 @@ public class Idea {
 	@JoinColumn(name = "contest_id")
 	private Contest contest;
 
-	@Column(nullable = false, length = 100)
-	private String title;
-
 	@OneToMany(mappedBy = "idea", cascade = CascadeType.ALL, orphanRemoval = true)
 	@Builder.Default
 	private List<IdeaVersion> versions = new ArrayList<>();
@@ -50,13 +47,11 @@ public class Idea {
 	public static Idea register(
 			User user,
 			Contest contest,
-			String title,
 			LocalDateTime requestedAt
 	) {
 		return Idea.builder()
 				.user(user)
 				.contest(contest)
-				.title(title)
 				.requestedAt(requestedAt)
 				.build();
 	}

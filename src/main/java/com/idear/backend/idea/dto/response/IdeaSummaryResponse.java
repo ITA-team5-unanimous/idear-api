@@ -44,7 +44,7 @@ public class IdeaSummaryResponse {
 				.ideaId(idea.getIdeaId())
 				.ideaVersionId(version.getIdeaVersionId())
 				.versionNumber(version.getVersionNumber())
-				.title(idea.getTitle())
+				.title(version.getTitle())
 				.host(host)
 				.dday(dDay)
 				.contestImageUrl(contestImageUrl)

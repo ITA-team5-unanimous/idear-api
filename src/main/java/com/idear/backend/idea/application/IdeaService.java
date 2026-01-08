@@ -64,12 +64,12 @@ public class IdeaService {
 		Idea idea = Idea.register(
 				user,
 				contest,
-				request.getTitle(),
 				requestedAt
 		);
 		idea = ideaRepository.save(idea);
 
 		IdeaVersion initialVersion = IdeaVersion.createInitialVersion(
+				request.getTitle(),
 				request.getShortDescription(),
 				request.getDescription(),
 				request.getGithubUrl(),
@@ -148,6 +148,7 @@ public class IdeaService {
 			Long ideaId,
 			List<Long> deleteFileIds,
 			List<Long> deleteImageIds,
+			String title,
 			String shortDescription,
 			String description,
 			String githubUrl,
@@ -190,11 +191,11 @@ public class IdeaService {
 			copyFilesFromPreviousVersion(newVersion, latestVersion, deleteFileIds);
 
 			fileHashInfoList = processFiles(newVersion, files, timestamp);
-			newVersion.updateMetadataIfNeeded(shortDescription, description, githubUrl, figmaUrl);
+			newVersion.updateMetadataIfNeeded(title, shortDescription, description, githubUrl, figmaUrl);
 
 			targetVersion = newVersion;
 		} else {
-			latestVersion.updateMetadataIfNeeded(shortDescription, description, githubUrl, figmaUrl);
+			latestVersion.updateMetadataIfNeeded(title, shortDescription, description, githubUrl, figmaUrl);
 			targetVersion = latestVersion;
 		}
 

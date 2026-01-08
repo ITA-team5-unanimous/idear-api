@@ -79,13 +79,14 @@ public class IdeaController {
 	) throws IOException {
 		List<Long> deleteFileIds = ideaUpdateRequest != null ? ideaUpdateRequest.getDeleteFileIds() : null;
 		List<Long> deleteImageIds = ideaUpdateRequest != null ? ideaUpdateRequest.getDeleteImageIds() : null;
+		String title = ideaUpdateRequest != null ? ideaUpdateRequest.getTitle() : null;
 		String shortDescription = ideaUpdateRequest != null ? ideaUpdateRequest.getShortDescription() : null;
 		String description = ideaUpdateRequest != null ? ideaUpdateRequest.getDescription() : null;
 		String githubUrl = ideaUpdateRequest != null ? ideaUpdateRequest.getGithubUrl() : null;
 		String figmaUrl = ideaUpdateRequest != null ? ideaUpdateRequest.getFigmaUrl() : null;
 
 		IdeaUpdateResponse response = ideaService.updateIdea(
-				user, ideaId, deleteFileIds, deleteImageIds,
+				user, ideaId, deleteFileIds, deleteImageIds, title,
 				shortDescription, description, githubUrl, figmaUrl, images, files
 		);
 		return ResponseEntity.ok(ApiResponse.success(response));
