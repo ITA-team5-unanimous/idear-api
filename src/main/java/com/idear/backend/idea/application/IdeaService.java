@@ -11,6 +11,7 @@ import com.idear.backend.idea.domain.IdeaImage;
 import com.idear.backend.idea.domain.IdeaVersion;
 import com.idear.backend.idea.dto.request.FileSignatureRequest;
 import com.idear.backend.idea.dto.request.IdeaCreateRequest;
+import com.idear.backend.idea.dto.request.IdeaUpdateRequest;
 import com.idear.backend.idea.dto.request.SignatureData;
 import com.idear.backend.idea.dto.response.*;
 import com.idear.backend.idea.infrastructure.repository.IdeaFileRepository;
@@ -146,13 +147,7 @@ public class IdeaService {
 	public IdeaUpdateResponse updateIdea(
 			User user,
 			Long ideaId,
-			List<Long> deleteFileIds,
-			List<Long> deleteImageIds,
-			String title,
-			String shortDescription,
-			String description,
-			String githubUrl,
-			String figmaUrl,
+			IdeaUpdateRequest request,
 			List<MultipartFile> images,
 			List<MultipartFile> files
 	) throws IOException {
@@ -166,6 +161,18 @@ public class IdeaService {
 		IdeaVersion latestVersion = ideaVersionRepository
 				.findLatestByIdeaWithFilesAndImages(idea)
 				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_VERSION_NOT_FOUND));
+
+		if (request == null) {
+			request = new IdeaUpdateRequest();
+		}
+
+		List<Long> deleteFileIds = request.getDeleteFileIds();
+		List<Long> deleteImageIds = request.getDeleteImageIds();
+		String title = request.getTitle();
+		String shortDescription = request.getShortDescription();
+		String description = request.getDescription();
+		String githubUrl = request.getGithubUrl();
+		String figmaUrl = request.getFigmaUrl();
 
 		boolean hasFileChanges = (deleteFileIds != null && !deleteFileIds.isEmpty())
 				|| hasNonEmptyFiles(files);
