@@ -56,6 +56,9 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           script: |
+            echo "WORKFLOW=$GITHUB_WORKFLOW REF=$GITHUB_REF SHA=$GITHUB_SHA RUN_ID=$GITHUB_RUN_ID"
+            date
+            
             set -e
 
             DOCKER_NETWORK="idear-net"
