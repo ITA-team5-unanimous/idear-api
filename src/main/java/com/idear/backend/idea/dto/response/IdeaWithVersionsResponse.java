@@ -14,7 +14,6 @@ import lombok.Getter;
 @Builder
 public class IdeaWithVersionsResponse {
 	private Long ideaId;
-	private String title;
 	private Long contestId;
 	private String contestTitle;
 	private LocalDateTime requestedAt;
@@ -34,7 +33,6 @@ public class IdeaWithVersionsResponse {
 
 		return IdeaWithVersionsResponse.builder()
 				.ideaId(idea.getIdeaId())
-				.title(idea.getTitle())
 				.contestId(contestId)
 				.contestTitle(contestTitle)
 				.requestedAt(idea.getRequestedAt())

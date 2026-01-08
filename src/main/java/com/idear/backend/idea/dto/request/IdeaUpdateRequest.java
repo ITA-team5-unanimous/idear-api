@@ -8,6 +8,7 @@ import lombok.Getter;
 public class IdeaUpdateRequest {
 	private List<Long> deleteFileIds;
 	private List<Long> deleteImageIds;
+	private String title;
 	private String shortDescription;
 	private String description;
 	private String githubUrl;

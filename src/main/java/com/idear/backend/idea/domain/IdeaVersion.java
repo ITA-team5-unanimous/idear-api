@@ -35,6 +35,9 @@ public class IdeaVersion {
     @Column(nullable = false)
     private Integer versionNumber;
 
+    @Column(nullable = false, length = 100)
+    private String title;
+
     @Column(length = 255)
     private String shortDescription;
 
@@ -64,6 +67,7 @@ public class IdeaVersion {
     private LocalDateTime deletedAt;
 
     public static IdeaVersion createInitialVersion(
+            String title,
             String shortDescription,
             String description,
             String githubUrl,
@@ -72,6 +76,7 @@ public class IdeaVersion {
     ) {
         return IdeaVersion.builder()
                 .versionNumber(1)
+                .title(title)
                 .shortDescription(shortDescription)
                 .description(description)
                 .githubUrl(githubUrl)
@@ -86,6 +91,7 @@ public class IdeaVersion {
     ) {
         return IdeaVersion.builder()
                 .versionNumber(newVersionNumber)
+                .title(previousVersion.title)
                 .shortDescription(previousVersion.shortDescription)
                 .description(previousVersion.description)
                 .githubUrl(previousVersion.githubUrl)
@@ -94,7 +100,8 @@ public class IdeaVersion {
                 .build();
     }
 
-    public void updateMetadataIfNeeded(String shortDescription, String description, String githubUrl, String figmaUrl) {
+    public void updateMetadataIfNeeded(String title, String shortDescription, String description, String githubUrl, String figmaUrl) {
+        this.title = title != null ? title : this.title;
         this.shortDescription = shortDescription != null ? shortDescription : this.shortDescription;
         this.description = description != null ? description : this.description;
         this.githubUrl = githubUrl != null ? githubUrl : this.githubUrl;

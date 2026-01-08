@@ -77,17 +77,7 @@ public class IdeaController {
 			@Parameter(description = "추가할 파일 목록")
 			@RequestPart(value = "files", required = false) List<MultipartFile> files
 	) throws IOException {
-		List<Long> deleteFileIds = ideaUpdateRequest != null ? ideaUpdateRequest.getDeleteFileIds() : null;
-		List<Long> deleteImageIds = ideaUpdateRequest != null ? ideaUpdateRequest.getDeleteImageIds() : null;
-		String shortDescription = ideaUpdateRequest != null ? ideaUpdateRequest.getShortDescription() : null;
-		String description = ideaUpdateRequest != null ? ideaUpdateRequest.getDescription() : null;
-		String githubUrl = ideaUpdateRequest != null ? ideaUpdateRequest.getGithubUrl() : null;
-		String figmaUrl = ideaUpdateRequest != null ? ideaUpdateRequest.getFigmaUrl() : null;
-
-		IdeaUpdateResponse response = ideaService.updateIdea(
-				user, ideaId, deleteFileIds, deleteImageIds,
-				shortDescription, description, githubUrl, figmaUrl, images, files
-		);
+		IdeaUpdateResponse response = ideaService.updateIdea(user, ideaId, ideaUpdateRequest, images, files);
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
 

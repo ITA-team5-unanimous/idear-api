@@ -14,6 +14,7 @@ import lombok.Getter;
 public class VersionDetailInfo {
 	private Long ideaVersionId;
 	private Integer versionNumber;
+	private String title;
 	private String shortDescription;
 	private String description;
 	private String githubUrl;
@@ -39,6 +40,7 @@ public class VersionDetailInfo {
 		return VersionDetailInfo.builder()
 				.ideaVersionId(version.getIdeaVersionId())
 				.versionNumber(version.getVersionNumber())
+				.title(version.getTitle())
 				.shortDescription(version.getShortDescription())
 				.description(version.getDescription())
 				.githubUrl(version.getGithubUrl())
