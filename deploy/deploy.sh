@@ -24,16 +24,12 @@ fi
 
 CONTAINER_ID=$(sudo docker ps -aqf "name=^/${CONTAINER_NAME}$")
 if [ -n "${CONTAINER_ID}" ]; then
-  echo "Stopping existing container: ${CONTAINER_ID}"
   sudo docker stop "${CONTAINER_ID}"
   sudo docker rm "${CONTAINER_ID}"
-else
-  echo "No existing container to stop."
 fi
 
 sudo docker pull "${IMAGE_NAME}"
 
-echo "Running the new container with image: ${IMAGE_NAME}"
 sudo docker run --name "${CONTAINER_NAME}" -d \
   --network "${DOCKER_NETWORK}" \
   -p 8080:8080 \
@@ -63,4 +59,4 @@ sudo docker run --name "${CONTAINER_NAME}" -d \
   -e SPRING_MAIL_PASSWORD="${SPRING_MAIL_PASSWORD}" \
   "${IMAGE_NAME}"
 
-sudo docker system prune -f
+sudo docker system prune -a -f
