@@ -123,6 +123,6 @@ jobs:
                  -e SERVER_PRIVATE_KEY=${{ secrets.SERVER_PRIVATE_KEY }} \
                  -e SPRING_MAIL_USERNAME=${{ secrets.SPRING_MAIL_USERNAME }} \
                  -e SPRING_MAIL_PASSWORD=${{ secrets.SPRING_MAIL_PASSWORD }} \
-                 ${IMAGE_NAME}
+                 "${IMAGE_NAME}"
 
             sudo docker system prune -f
