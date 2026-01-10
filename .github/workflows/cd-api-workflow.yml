@@ -90,4 +90,5 @@ jobs:
             SERVER_PRIVATE_KEY='${{ secrets.SERVER_PRIVATE_KEY }}' \
             SPRING_MAIL_USERNAME='${{ secrets.SPRING_MAIL_USERNAME }}' \
             SPRING_MAIL_PASSWORD='${{ secrets.SPRING_MAIL_PASSWORD }}' \
+            BLOCKCHAIN_CONTRACT_ADDRESS='${{ secrets.BLOCKCHAIN_CONTRACT_ADDRESS }}' \
             bash /home/ubuntu/deploy/deploy.sh
