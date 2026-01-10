@@ -61,6 +61,8 @@ blockchain:
     url: ${BLOCKCHAIN_GATEWAY_URL}
   server:
     private-key: ${SERVER_PRIVATE_KEY}
+  contract:
+    address: ${BLOCKCHAIN_CONTRACT_ADDRESS}
 
 ---
 spring:

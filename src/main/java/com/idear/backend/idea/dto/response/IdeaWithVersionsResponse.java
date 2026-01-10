@@ -17,9 +17,10 @@ public class IdeaWithVersionsResponse {
 	private Long contestId;
 	private String contestTitle;
 	private LocalDateTime requestedAt;
+	private String latestCertificateUrl;
 	private List<VersionDetailInfo> versions;
 
-	public static IdeaWithVersionsResponse of(Idea idea, List<IdeaVersion> versions) {
+	public static IdeaWithVersionsResponse of(Idea idea, List<IdeaVersion> versions, String latestCertificateUrl) {
 		List<VersionDetailInfo> versionInfos = versions.stream()
 				.map(VersionDetailInfo::of)
 				.collect(Collectors.toList());
@@ -36,6 +37,7 @@ public class IdeaWithVersionsResponse {
 				.contestId(contestId)
 				.contestTitle(contestTitle)
 				.requestedAt(idea.getRequestedAt())
+				.latestCertificateUrl(latestCertificateUrl)
 				.versions(versionInfos)
 				.build();
 	}

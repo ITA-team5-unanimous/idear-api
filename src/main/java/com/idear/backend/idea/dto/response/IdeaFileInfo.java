@@ -12,6 +12,7 @@ public class IdeaFileInfo {
 	private String filePath;
 	private IdeaFile.RegisterStatus status;
 	private String txHash;
+	private String certificateUrl;
 
 	public static IdeaFileInfo of(IdeaFile ideaFile) {
 		return IdeaFileInfo.builder()
@@ -19,6 +20,7 @@ public class IdeaFileInfo {
 				.filePath(ideaFile.getFilePath())
 				.status(ideaFile.getRegisterStatus())
 				.txHash(ideaFile.getTxHash())
+				.certificateUrl(ideaFile.getCertificateUrl())
 				.build();
 	}
 }
