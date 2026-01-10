@@ -22,6 +22,8 @@ import com.idear.backend.idea.util.HashUtil;
 import com.idear.backend.idea.util.ServerSignatureService;
 import com.idear.backend.user.domain.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,7 +32,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -222,17 +223,20 @@ public class IdeaService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<IdeaSummaryResponse> getIdeasByUser(User user) {
-		List<Idea> ideas = ideaRepository.findAllByUser(user);
+	public Page<IdeaSummaryResponse> getIdeasByUser(User user, Pageable pageable, String keyword) {
+		Page<Idea> ideasPage;
+		if (keyword == null || keyword.trim().isEmpty()) {
+			ideasPage = ideaRepository.findByUserOrderByRequestedAtDesc(user, pageable);
+		} else {
+			ideasPage = ideaRepository.findByUserAndTitleContaining(user, keyword, pageable);
+		}
 
-		return ideas.stream()
-				.map(idea -> {
-					IdeaVersion latestVersion = ideaVersionRepository
-							.findTopByIdeaOrderByVersionNumberDesc(idea)
-							.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_VERSION_NOT_FOUND));
-					return IdeaSummaryResponse.of(idea, latestVersion);
-				})
-				.collect(Collectors.toList());
+		return ideasPage.map(idea -> {
+			IdeaVersion latestVersion = ideaVersionRepository
+					.findTopByIdeaOrderByVersionNumberDesc(idea)
+					.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_VERSION_NOT_FOUND));
+			return IdeaSummaryResponse.of(idea, latestVersion);
+		});
 	}
 
 	@Transactional(readOnly = true)

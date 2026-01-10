@@ -13,6 +13,10 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -83,13 +87,17 @@ public class IdeaController {
 
 	@Operation(
 		summary = "내 아이디어 목록 조회",
-		description = "현재 로그인한 사용자가 등록한 모든 아이디어 목록을 조회합니다."
+		description = "현재 로그인한 사용자가 등록한 아이디어 목록을 페이징하여 조회합니다. 키워드로 제목을 검색할 수 있으며, 최신순(requestedAt DESC)으로 정렬됩니다."
 	)
 	@GetMapping
-	public ResponseEntity<ApiResponse<List<IdeaSummaryResponse>>> getMyIdeas(
-		@Parameter(hidden = true) @ValidatedUser User user
+	public ResponseEntity<ApiResponse<Page<IdeaSummaryResponse>>> getMyIdeas(
+		@Parameter(hidden = true) @ValidatedUser User user,
+		@Parameter(description = "페이징 정보 (size=8, sort=requestedAt,desc)", hidden = true)
+		@PageableDefault(size = 8, sort = "requestedAt", direction = Sort.Direction.DESC) Pageable pageable,
+		@Parameter(description = "검색 키워드 (제목 검색)", example = "아이디어")
+		@RequestParam(value = "keyword", required = false) String keyword
 	) {
-		List<IdeaSummaryResponse> ideas = ideaService.getIdeasByUser(user);
+		Page<IdeaSummaryResponse> ideas = ideaService.getIdeasByUser(user, pageable, keyword);
 		return ResponseEntity.ok(ApiResponse.success(ideas));
 	}
 
