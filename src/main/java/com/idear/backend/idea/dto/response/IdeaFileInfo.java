@@ -8,6 +8,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class IdeaFileInfo {
+	private Long ideaFileId;
 	private String fileName;
 	private String filePath;
 	private IdeaFile.RegisterStatus status;
@@ -16,6 +17,7 @@ public class IdeaFileInfo {
 
 	public static IdeaFileInfo of(IdeaFile ideaFile) {
 		return IdeaFileInfo.builder()
+				.ideaFileId(ideaFile.getIdeaFileId())
 				.fileName(ideaFile.getOriginalFileName())
 				.filePath(ideaFile.getFilePath())
 				.status(ideaFile.getRegisterStatus())
