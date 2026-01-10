@@ -249,8 +249,9 @@ public class IdeaService {
 		}
 
 		List<IdeaVersion> versions = ideaVersionRepository.findAllByIdeaOrderByVersionNumberDesc(idea);
+		String latestCertificateUrl = getLatestCertificateUrl(versions);
 
-		return IdeaWithVersionsResponse.of(idea, versions);
+		return IdeaWithVersionsResponse.of(idea, versions, latestCertificateUrl);
 	}
 
 	@Transactional
@@ -369,5 +370,18 @@ public class IdeaService {
 		for (IdeaFile file : filesToKeep) {
 			newVersion.addFile(file);
 		}
+	}
+
+	private String getLatestCertificateUrl(List<IdeaVersion> versions) {
+		if (versions.isEmpty()) {
+			return null;
+		}
+
+		IdeaVersion latestVersion = versions.get(0);
+		if (latestVersion.getFiles().isEmpty()) {
+			return null;
+		}
+
+		return latestVersion.getFiles().iterator().next().getCertificateUrl();
 	}
 }

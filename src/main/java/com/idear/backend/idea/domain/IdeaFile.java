@@ -70,6 +70,9 @@ public class IdeaFile {
 	@Enumerated(EnumType.STRING)
 	private RegistrationFailureReason registrationFailureReason;
 
+	@Column(length = 500)
+	private String certificateUrl;
+
 	private LocalDateTime deletedAt;
 
 	public enum RegisterStatus {
@@ -122,6 +125,10 @@ public class IdeaFile {
 		this.txHash = txHash;
 		this.registrationFailureReason = reason;
 		this.registerStatus = RegisterStatus.FAILED;
+	}
+
+	public void setCertificateUrl(String certificateUrl) {
+		this.certificateUrl = certificateUrl;
 	}
 
 	private void validateStatus(RegisterStatus expected) {

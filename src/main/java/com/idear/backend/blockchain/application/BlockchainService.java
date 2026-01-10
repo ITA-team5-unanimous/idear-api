@@ -3,6 +3,7 @@ package com.idear.backend.blockchain.application;
 import com.idear.backend.alert.application.service.AlertService;
 import com.idear.backend.blockchain.domain.RegistrationFailureReason;
 import com.idear.backend.blockchain.dto.request.RegistrationResultRequest;
+import com.idear.backend.certificate.application.CertificateService;
 import com.idear.backend.email.service.EmailService;
 import com.idear.backend.global.exception.CustomException;
 import com.idear.backend.global.exception.ErrorCode;
@@ -37,6 +38,7 @@ public class BlockchainService {
 	private final AlertService alertService;
 	private final RestTemplate restTemplate;
 	private final EmailService emailService;
+	private final CertificateService certificateService;
 
 	public void requestCommitRegistration(String commit, Long timestamp, String userSignature, String serverSignature) {
 		try {
@@ -95,6 +97,14 @@ public class BlockchainService {
 		Idea idea = ideaRepository.findIdeaByFile(ideaFile)
 				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
 		User user = idea.getUser();
+
+		try {
+			String certificateUrl = certificateService.generateAndUploadCertificate(ideaFile, user, idea);
+			ideaFile.setCertificateUrl(certificateUrl);
+			log.info("Certificate generated for fileId={}, url={}", ideaFile.getIdeaFileId(), certificateUrl);
+		} catch (Exception e) {
+			log.error("Certificate generation failed for fileId={}", ideaFile.getIdeaFileId(), e);
+		}
 
 		alertService.createRegistrationAlert(
 				"아이디어 파일이 등록되었습니다. 내용이 맞는지 확인해주세요.",
