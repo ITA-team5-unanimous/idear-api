@@ -73,7 +73,7 @@ public class CertificateService {
 		context.setVariable("txHash", ideaFile.getTxHash());
 		context.setVariable("blockNumber", ideaFile.getBlockNumber());
 		context.setVariable("onchainTimestamp", formatTimestamp(ideaFile.getRegisteredTimestamp()));
-		context.setVariable("issuedAt", LocalDateTime.now().format(
+		context.setVariable("issuedAt", LocalDateTime.now(ZoneId.of("Asia/Seoul")).format(
 			DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 		));
 		context.setVariable("documentNumber", String.valueOf(ideaFile.getIdeaFileId()));
