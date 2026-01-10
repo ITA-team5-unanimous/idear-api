@@ -377,11 +377,11 @@ public class IdeaService {
 			return null;
 		}
 
-		IdeaVersion latestVersion = versions.get(0);
-		if (latestVersion.getFiles().isEmpty()) {
-			return null;
-		}
-
-		return latestVersion.getFiles().iterator().next().getCertificateUrl();
+		IdeaVersion latestVersion = versions.getFirst();
+		return latestVersion.getFiles().stream()
+				.map(IdeaFile::getCertificateUrl)
+				.filter(Objects::nonNull)
+				.findFirst()
+				.orElse(null);
 	}
 }
