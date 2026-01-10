@@ -84,12 +84,13 @@ public class BlockchainService {
 		}
 
 		String txHash = request.getTxHash();
+		Integer blockNumber = request.getSuccessData().getBlockNumber();
 		Long registeredAt = request.getSuccessData().getRegisteredAt();
 
 		log.info("Processing SUCCESS: ideaFileId={}, txHash={}, registeredAt={}, blockNumber={}",
 				ideaFile.getIdeaFileId(), txHash, registeredAt, request.getSuccessData().getBlockNumber());
 
-		ideaFile.registrationSucceed(txHash, registeredAt);
+		ideaFile.registrationSucceed(txHash, blockNumber, registeredAt);
 
 		Idea idea = ideaRepository.findIdeaByFile(ideaFile)
 				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));

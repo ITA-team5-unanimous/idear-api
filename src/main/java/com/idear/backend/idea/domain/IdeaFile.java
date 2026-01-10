@@ -60,6 +60,8 @@ public class IdeaFile {
 	@Column(length = 100)
 	private String txHash;
 
+	private Integer blockNumber;
+
 	@Column(nullable = false)
 	private Long requestedTimestamp;
 
@@ -105,10 +107,11 @@ public class IdeaFile {
 		this.registerStatus = RegisterStatus.BLOCKCHAIN_PENDING;
 	}
 
-	public void registrationSucceed(String txHash, Long registeredAt){
+	public void registrationSucceed(String txHash, Integer blockNumber, Long registeredAt){
 		validateStatus(RegisterStatus.BLOCKCHAIN_PENDING);
 
 		this.txHash = txHash;
+		this.blockNumber = blockNumber;
 		this.registeredTimestamp = registeredAt;
 		this.registerStatus = RegisterStatus.REGISTERED;
 	}
