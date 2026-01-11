@@ -157,11 +157,6 @@ public class UserService {
         user.updateProfileImage(defaultImageUrl);
     }
 
-    @Transactional
-    public void updateProfileImage(User user, String profileImageUrl) {
-        user.updateProfileImage(profileImageUrl);
-    }
-
     // 헬퍼 메서드
     private String generateVerificationCode() {
         Random random = new Random();
