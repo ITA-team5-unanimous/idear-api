@@ -98,7 +98,7 @@ public class UserController {
 	public ResponseEntity<ApiResponse<Void>> updateEmail(
 			@Parameter(hidden = true) @ValidatedUser User user,
 			@Valid @RequestBody UpdateEmailRequest request) {
-		userService.updateEmail(user, request.getEmail(), request.getCode());
+		userService.updateEmail(user, request.getEmail());
 		return ResponseEntity.ok(ApiResponse.success());
 	}
 

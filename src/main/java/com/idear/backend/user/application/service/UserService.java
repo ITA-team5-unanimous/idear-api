@@ -9,15 +9,18 @@ import com.idear.backend.user.domain.User;
 import com.idear.backend.user.dto.response.UserInfoResponse;
 import com.idear.backend.user.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Random;
+import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -27,6 +30,7 @@ public class UserService {
     private final FileStorageService fileStorageService;
     private final RedisTemplate<String, Object> redisTemplate;
     private final UserProperties userProperties;
+    private final SecureRandom secureRandom = new SecureRandom();
 
     private static final String EMAIL_VERIFICATION_PREFIX = "email:verification:";
     private static final String EMAIL_VERIFIED_PREFIX = "email:verified:";
@@ -68,7 +72,7 @@ public class UserService {
 
         // 이메일 전송
         emailService.sendEmail(email, "[iDear] 이메일 인증 코드",
-                "인증 코드: " + code + "\n\n이 코드는 5분간 유효합니다.");
+                String.format("인증 코드: %s\n\n이 코드는 %d분간 유효합니다.", code, expiration));
     }
 
     public void verifyEmailCode(String email, String code) {
@@ -93,7 +97,7 @@ public class UserService {
     }
 
     @Transactional
-    public void updateEmail(User user, String email, String code) {
+    public void updateEmail(User user, String email) {
         // 이메일 인증 확인
         String verifiedKey = EMAIL_VERIFIED_PREFIX + email;
         String verified = (String) redisTemplate.opsForValue().get(verifiedKey);
@@ -138,7 +142,7 @@ public class UserService {
             user.updateProfileImage(profileImageUrl);
 
             return profileImageUrl;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw CustomException.of(ErrorCode.FILE_UPLOAD_ERROR);
         }
     }
@@ -159,8 +163,7 @@ public class UserService {
 
     // 헬퍼 메서드
     private String generateVerificationCode() {
-        Random random = new Random();
-        return String.format("%06d", random.nextInt(1000000));
+        return String.format("%06d", secureRandom.nextInt(1000000));
     }
 
     private void validateImageFile(MultipartFile file) {
@@ -205,8 +208,8 @@ public class UserService {
             String fileName = urlParts[urlParts.length - 1];
             fileStorageService.deleteFile(fileName, "profile-images");
         } catch (Exception e) {
-            // 에러 로그만 남기고 작업은 실패시키지 않음
-            // 기존 파일은 S3에 남지만 참조되지 않음
+            // 에러 로그를 남기고 작업은 실패시키지 않음
+            log.error("Failed to delete old profile image: {}", profileImageUrl, e);
         }
     }
 }
