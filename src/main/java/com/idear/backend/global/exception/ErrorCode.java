@@ -24,6 +24,12 @@ public enum ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U001", "존재하지 않는 유저입니다."),
     USER_DELETED(HttpStatus.NOT_FOUND, "U002", "탈퇴 처리된 유저입니다."),
     USER_NOT_OWNER(HttpStatus.NOT_FOUND, "U003", "요청 대상 자원의 소유자가 아닙니다."),
+    EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "U004", "이미 사용 중인 이메일입니다."),
+    INVALID_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "U005", "유효하지 않은 인증 코드입니다."),
+    VERIFICATION_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "U006", "인증 코드가 만료되었습니다."),
+    EMAIL_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "U007", "이메일 인증이 완료되지 않았습니다."),
+    INVALID_IMAGE_FILE(HttpStatus.BAD_REQUEST, "U008", "유효하지 않은 이미지 파일입니다."),
+    IMAGE_FILE_TOO_LARGE(HttpStatus.BAD_REQUEST, "U009", "이미지 파일 크기가 너무 큽니다. (최대 5MB)"),
 
     // Idea
     FILE_UPLOAD_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "F001", "파일 업로드를 실패했습니다."),

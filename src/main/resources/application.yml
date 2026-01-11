@@ -64,6 +64,16 @@ blockchain:
   contract:
     address: ${BLOCKCHAIN_CONTRACT_ADDRESS}
 
+user:
+  profile:
+    default-image-url: ${USER_DEFAULT_PROFILE_IMAGE_URL}
+    max-image-size: ${USER_PROFILE_MAX_IMAGE_SIZE:5242880} # 5MB in bytes
+    allowed-extensions: ${USER_PROFILE_ALLOWED_EXTENSIONS:jpg,jpeg,png,gif,webp}
+  email:
+    verification:
+      code-expiration-minutes: ${EMAIL_VERIFICATION_CODE_EXPIRATION:5}
+      verified-expiration-minutes: ${EMAIL_VERIFIED_EXPIRATION:10}
+
 ---
 spring:
   config:

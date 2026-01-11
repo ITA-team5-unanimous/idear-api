@@ -40,6 +40,8 @@ public class User {
     @Column(length = 500)
     private String publicKey;
 
+    private String profileImageUrl;
+
     private LocalDateTime deletedAt;
 
     public static User of(String name, String email, String providerInfo, UserRole role){
@@ -57,6 +59,14 @@ public class User {
 
     public void updateUsername(String name){
         this.name = name;
+    }
+
+    public void updateEmail(String email) {
+        this.email = email;
+    }
+
+    public void updateProfileImage(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
 
     public void registerPublicKey(String publicKey) {

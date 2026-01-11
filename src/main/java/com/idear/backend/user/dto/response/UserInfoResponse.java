@@ -11,6 +11,7 @@ public class UserInfoResponse {
 	private String email;
 	private String provider;
 	private String publicKey;
+	private String profileImageUrl;
 
 	public static UserInfoResponse from(User user) {
 		return UserInfoResponse.builder()
@@ -18,6 +19,7 @@ public class UserInfoResponse {
 				.email(user.getEmail())
 				.provider(user.getProvider())
 				.publicKey(user.getPublicKey())
+				.profileImageUrl(user.getProfileImageUrl())
 				.build();
 	}
 }
