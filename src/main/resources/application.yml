@@ -66,7 +66,7 @@ blockchain:
 
 user:
   profile:
-    default-image-url: ${USER_DEFAULT_PROFILE_IMAGE_URL}
+    default-image-url: ${USER_DEFAULT_PROFILE_IMAGE_URL:https://idear-file.s3.ap-northeast-2.amazonaws.com/profile-images/default-image.png}
     max-image-size: ${USER_PROFILE_MAX_IMAGE_SIZE:5242880} # 5MB in bytes
     allowed-extensions: ${USER_PROFILE_ALLOWED_EXTENSIONS:jpg,jpeg,png,gif,webp}
   email:
