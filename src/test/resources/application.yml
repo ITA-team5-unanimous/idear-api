@@ -49,6 +49,19 @@ spring:
       username: idear.developer@gmail.com
       password: testpwd
 
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+  task:
+    scheduling:
+      enabled: false
+
+idear:
+  crawler:
+    enabled: false
+
 secret:
   jwt:
     key: testjwtsecretkeytestjwtsecretkeytestjwtsecretkeytestjwtsecretkey
@@ -73,3 +86,13 @@ blockchain:
     private-key: "0x0000000000000000000000000000000000000000000000000000000000000001"
   contract:
     address: "0x0000000000000000000000000000000000000000"
+
+user:
+  profile:
+    default-image-url: https://idear-file.s3.ap-northeast-2.amazonaws.com/profile-images/default-image.png
+    max-image-size: 5242880
+    allowed-extensions: jpg,jpeg,png,gif,webp
+  email:
+    verification:
+      code-expiration-minutes: 5
+      verified-expiration-minutes: 10
