@@ -59,6 +59,7 @@ public enum ErrorCode {
     CERTIFICATE_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "CT001", "증명서 생성에 실패했습니다."),
     CERTIFICATE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "CT002", "증명서 업로드에 실패했습니다."),
     FILE_NOT_REGISTERED(HttpStatus.BAD_REQUEST, "CT003", "블록체인 등록이 완료되지 않은 파일입니다."),
+    LATEST_VERSION_NOT_REGISTERED(HttpStatus.BAD_REQUEST, "CT004", "최신 버전의 파일에 대해 블록체인 등록이 완료되지 않았습니다."),
 
     // Inquiry
     NOT_FOUND_INQUIRY(HttpStatus.NOT_FOUND, "Q001", "존재하지 않는 문의입니다."),

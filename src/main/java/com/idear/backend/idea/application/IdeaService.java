@@ -22,6 +22,7 @@ import com.idear.backend.idea.util.HashUtil;
 import com.idear.backend.idea.util.ServerSignatureService;
 import com.idear.backend.user.domain.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,13 +30,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class IdeaService {
+
+	private static final String BLOCKCHAIN_NETWORK = "Sepolia";
 
 	private final IdeaRepository ideaRepository;
 	private final IdeaVersionRepository ideaVersionRepository;
@@ -46,6 +49,9 @@ public class IdeaService {
 	private final ContestRepository contestRepository;
 	private final HashUtil hashUtil;
 	private final ServerSignatureService serverSignatureService;
+
+	@Value("${blockchain.contract.address}")
+	private String contractAddress;
 
 	@Transactional
 	public IdeaRegistrationInitResponse initIdeaRegistration(
@@ -61,7 +67,7 @@ public class IdeaService {
 		}
 
 		LocalDateTime requestedAt = LocalDateTime.now();
-		Long requestTimestamp = requestedAt.toEpochSecond(ZoneOffset.UTC);
+		Long requestTimestamp = Instant.now().toEpochMilli();
 
 		Idea idea = Idea.register(
 				user,
@@ -181,7 +187,7 @@ public class IdeaService {
 		IdeaVersion targetVersion;
 		List<FileHashInfo> fileHashInfoList = new ArrayList<>();
 		LocalDateTime updatedAt = LocalDateTime.now();
-		Long timestamp = updatedAt.toEpochSecond(ZoneOffset.UTC);
+		Long timestamp = Instant.now().toEpochMilli();
 
 		if (hasFileChanges) {
 			Integer maxVersionNumber = ideaVersionRepository
@@ -249,9 +255,12 @@ public class IdeaService {
 		}
 
 		List<IdeaVersion> versions = ideaVersionRepository.findAllByIdeaOrderByVersionNumberDesc(idea);
-		String latestCertificateUrl = getLatestCertificateUrl(versions);
+		IdeaFile latestFile = getLatestFile(versions);
 
-		return IdeaWithVersionsResponse.of(idea, versions, latestCertificateUrl);
+		String latestCertificateUrl = getLatestCertificateUrl(latestFile);
+		Boolean latestVersionRegistered = checkLatestVersionRegistered(latestFile);
+
+		return IdeaWithVersionsResponse.of(idea, versions, latestCertificateUrl, latestVersionRegistered);
 	}
 
 	@Transactional
@@ -264,6 +273,38 @@ public class IdeaService {
 		}
 
 		ideaRepository.delete(idea);
+	}
+
+	@Transactional(readOnly = true)
+	public IdeaCertificateResponse getCertificateData(User user, Long ideaId) {
+		Idea idea = ideaRepository.findById(ideaId)
+				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
+
+		if (!idea.getUser().getUserId().equals(user.getUserId())) {
+			throw CustomException.of(ErrorCode.ACCESS_DENIED);
+		}
+
+		IdeaVersion latestVersion = ideaVersionRepository
+				.findTopByIdeaOrderByVersionNumberDesc(idea)
+				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_VERSION_NOT_FOUND));
+
+		IdeaFile ideaFile = latestVersion.getFiles().stream()
+				.findFirst()
+				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_FILE_NOT_FOUND));
+
+		if (ideaFile.getRegisterStatus() != IdeaFile.RegisterStatus.REGISTERED) {
+			throw CustomException.of(ErrorCode.LATEST_VERSION_NOT_REGISTERED);
+		}
+
+		String ideaTitle = latestVersion.getTitle();
+
+		return IdeaCertificateResponse.of(
+				user,
+				ideaFile,
+				ideaTitle,
+				BLOCKCHAIN_NETWORK,
+				contractAddress
+		);
 	}
 
 	private boolean hasNonEmptyFiles(List<MultipartFile> files) {
@@ -372,16 +413,22 @@ public class IdeaService {
 		}
 	}
 
-	private String getLatestCertificateUrl(List<IdeaVersion> versions) {
+	private IdeaFile getLatestFile(List<IdeaVersion> versions) {
 		if (versions.isEmpty()) {
 			return null;
 		}
 
 		IdeaVersion latestVersion = versions.getFirst();
 		return latestVersion.getFiles().stream()
-				.map(IdeaFile::getCertificateUrl)
-				.filter(Objects::nonNull)
 				.findFirst()
 				.orElse(null);
+	}
+
+	private String getLatestCertificateUrl(IdeaFile latestFile) {
+		return latestFile != null ? latestFile.getCertificateUrl() : null;
+	}
+
+	private Boolean checkLatestVersionRegistered(IdeaFile latestFile) {
+		return latestFile != null && latestFile.getRegisterStatus() == IdeaFile.RegisterStatus.REGISTERED;
 	}
 }
