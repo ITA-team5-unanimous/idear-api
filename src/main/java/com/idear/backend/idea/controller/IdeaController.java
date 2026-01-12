@@ -128,4 +128,18 @@ public class IdeaController {
 		ideaService.deleteIdea(user, ideaId);
 		return ResponseEntity.ok(ApiResponse.success());
 	}
+
+	@Operation(
+		summary = "증명서 데이터 조회",
+		description = "아이디어의 최신 버전에 대한 증명서 발급 데이터를 조회합니다. 최신 버전의 파일이 블록체인에 등록(REGISTERED)되어 있어야 합니다."
+	)
+	@GetMapping("/{ideaId}/certificate")
+	public ResponseEntity<ApiResponse<IdeaCertificateResponse>> getCertificateData(
+		@Parameter(hidden = true) @ValidatedUser User user,
+		@Parameter(description = "아이디어 ID", required = true, example = "1")
+		@PathVariable("ideaId") Long ideaId
+	) {
+		IdeaCertificateResponse response = ideaService.getCertificateData(user, ideaId);
+		return ResponseEntity.ok(ApiResponse.success(response));
+	}
 }

@@ -89,10 +89,13 @@ public class BlockchainService {
 		Integer blockNumber = request.getSuccessData().getBlockNumber();
 		Long registeredAt = request.getSuccessData().getRegisteredAt();
 
-		log.info("Processing SUCCESS: ideaFileId={}, txHash={}, registeredAt={}, blockNumber={}",
-				ideaFile.getIdeaFileId(), txHash, registeredAt, request.getSuccessData().getBlockNumber());
+		// 블록체인 서버는 초 단위로 전송하기에 밀리초 변환
+		Long registeredAtMillis = registeredAt * 1000;
 
-		ideaFile.registrationSucceed(txHash, blockNumber, registeredAt);
+		log.info("Processing SUCCESS: ideaFileId={}, txHash={}, registeredAt={}, blockNumber={}",
+				ideaFile.getIdeaFileId(), txHash, registeredAtMillis, request.getSuccessData().getBlockNumber());
+
+		ideaFile.registrationSucceed(txHash, blockNumber, registeredAtMillis);
 
 		Idea idea = ideaRepository.findIdeaByFile(ideaFile)
 				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
