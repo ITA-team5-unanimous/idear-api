@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -65,6 +66,15 @@ public class InquiryController {
             @Parameter(description = "수정할 문의 내용", required = true) @RequestPart("request") InquiryUpdateRequest request,
             @Parameter(description = "에러 이미지 파일 (최대 4장)") @RequestPart(value = "images", required = false) List<MultipartFile> images) {
         inquiryService.updateInquiry(user, inquiryId, request, images);
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
+    @Operation(summary = "문의 삭제", description = "문의를 삭제합니다. 접수 상태일 때만 삭제 가능합니다.")
+    @DeleteMapping("/{inquiryId}")
+    public ResponseEntity<ApiResponse> deleteInquiry(
+            @Parameter(hidden = true) @ValidatedUser User user,
+            @Parameter(description = "문의 ID", required = true) @PathVariable Long inquiryId) {
+        inquiryService.deleteInquiry(user, inquiryId);
         return ResponseEntity.ok(ApiResponse.success());
     }
 }

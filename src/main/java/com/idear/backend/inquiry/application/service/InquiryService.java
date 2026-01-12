@@ -122,7 +122,6 @@ public class InquiryService {
     public InquiryDetailResponse getInquiryDetail(User user, Long id) {
         Inquiry inquiry = findInquiryById(id);
 
-        // 사용자가 자신의 문의만 조회할 수 있도록 검증
         if (!inquiry.getUser().getUserId().equals(user.getUserId())) {
             throw CustomException.of(ErrorCode.ACCESS_DENIED);
         }
@@ -175,6 +174,21 @@ public class InquiryService {
         if (images != null && !images.isEmpty()) {
             processInquiryImages(inquiry, images);
         }
+    }
+
+    @Transactional
+    public void deleteInquiry(User user, Long id) {
+        Inquiry inquiry = findInquiryById(id);
+
+        if (!inquiry.getUser().getUserId().equals(user.getUserId())) {
+            throw CustomException.of(ErrorCode.ACCESS_DENIED);
+        }
+
+        if (inquiry.getStatus() != InquiryStatus.RECEIVED) {
+            throw CustomException.of(ErrorCode.CANNOT_DELETE_INQUIRY);
+        }
+
+        inquiryRepository.delete(inquiry);
     }
 
     @Transactional
