@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -59,7 +60,7 @@ public class InquiryController {
     }
 
     @Operation(summary = "문의 수정", description = "문의 내용을 수정합니다. 기기, 브라우저, 문제상황, 이미지를 수정할 수 있습니다. 접수 상태일 때만 수정 가능합니다.")
-    @PostMapping(value = "/{inquiryId}", consumes = { "multipart/form-data" })
+    @PatchMapping(value = "/{inquiryId}", consumes = { "multipart/form-data" })
     public ResponseEntity<ApiResponse> updateInquiry(
             @Parameter(hidden = true) @ValidatedUser User user,
             @Parameter(description = "문의 ID", required = true) @PathVariable Long inquiryId,
