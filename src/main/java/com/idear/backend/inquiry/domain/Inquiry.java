@@ -67,7 +67,6 @@ public class Inquiry {
         this.problemDescription = problemDescription;
         this.status = InquiryStatus.RECEIVED;
         this.user = user;
-        this.createdAt = LocalDateTime.now();
     }
 
     public static Inquiry createInquiry(String title, LocalDateTime occurrenceTime, String browser, String device,
