@@ -6,9 +6,11 @@ import com.idear.backend.global.exception.ErrorCode;
 import com.idear.backend.idea.application.FileStorageService;
 import com.idear.backend.inquiry.domain.Inquiry;
 import com.idear.backend.inquiry.domain.InquiryImage;
+import com.idear.backend.inquiry.domain.InquiryStatus;
 import com.idear.backend.inquiry.dto.InquiryCreateRequest;
 import com.idear.backend.inquiry.dto.InquiryDetailResponse;
 import com.idear.backend.inquiry.dto.InquiryResponse;
+import com.idear.backend.inquiry.dto.InquiryUpdateRequest;
 import com.idear.backend.inquiry.infrastructure.repository.InquiryImageRepository;
 import com.idear.backend.inquiry.infrastructure.repository.InquiryRepository;
 import com.idear.backend.user.domain.User;
@@ -141,6 +143,38 @@ public class InquiryService {
                 inquiry.getAnswer(),
                 inquiry.getAnsweredAt(),
                 inquiry.getCreatedAt());
+    }
+
+    @Transactional
+    public void updateInquiry(User user, Long id, InquiryUpdateRequest request, List<MultipartFile> images) {
+        if (images != null && images.size() > 4) {
+            throw CustomException.of(ErrorCode.TOO_MANY_INQUIRY_IMAGES);
+        }
+
+        Inquiry inquiry = findInquiryById(id);
+        if (!inquiry.getUser().getUserId().equals(user.getUserId())) {
+            throw CustomException.of(ErrorCode.ACCESS_DENIED);
+        }
+
+        if (inquiry.getStatus() != InquiryStatus.RECEIVED) {
+            throw CustomException.of(ErrorCode.CANNOT_UPDATE_INQUIRY);
+        }
+
+        String title = generateTitle(request.problemDescription());
+
+        inquiry.updateInquiry(
+                title,
+                request.occurrenceTime(),
+                request.browser(),
+                request.device(),
+                request.problemDescription());
+
+        inquiry.clearImages();
+        inquiryImageRepository.deleteAll(inquiry.getInquiryImages());
+
+        if (images != null && !images.isEmpty()) {
+            processInquiryImages(inquiry, images);
+        }
     }
 
     @Transactional

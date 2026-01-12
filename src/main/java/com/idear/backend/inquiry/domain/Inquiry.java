@@ -2,7 +2,6 @@ package com.idear.backend.inquiry.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -88,5 +87,18 @@ public class Inquiry {
         this.answer = answerContent;
         this.answeredAt = LocalDateTime.now();
         this.status = InquiryStatus.ANSWERED;
+    }
+
+    public void updateInquiry(String title, LocalDateTime occurrenceTime, String browser, String device,
+            String problemDescription) {
+        this.title = title;
+        this.occurrenceTime = occurrenceTime;
+        this.browser = browser;
+        this.device = device;
+        this.problemDescription = problemDescription;
+    }
+
+    public void clearImages() {
+        this.inquiryImages.clear();
     }
 }

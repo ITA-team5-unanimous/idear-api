@@ -62,9 +62,10 @@ public enum ErrorCode {
 
     // Inquiry
     NOT_FOUND_INQUIRY(HttpStatus.NOT_FOUND, "Q001", "존재하지 않는 문의입니다."),
-    ALREADY_ANSWERED(HttpStatus.CONFLICT, "Q002", "이미 답변된 문의입니다."),
-    TOO_MANY_INQUIRY_IMAGES(HttpStatus.BAD_REQUEST, "Q003", "문의 이미지는 최대 4장까지 첨부할 수 있습니다."),
+    ALREADY_ANSWERED(HttpStatus.BAD_REQUEST, "Q002", "이미 답변된 문의입니다."),
+    TOO_MANY_INQUIRY_IMAGES(HttpStatus.BAD_REQUEST, "Q003", "문의 이미지는 최대 4장까지 첨부 가능합니다."),
     INVALID_INQUIRY_IMAGE_FILE(HttpStatus.BAD_REQUEST, "Q004", "유효하지 않은 이미지 파일입니다."),
+    CANNOT_UPDATE_INQUIRY(HttpStatus.BAD_REQUEST, "Q005", "접수 상태의 문의만 수정할 수 있습니다."),
 
     // Email
     EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "E001", "이메일 전송에 실패했습니다.");

@@ -6,6 +6,7 @@ import com.idear.backend.inquiry.application.service.InquiryService;
 import com.idear.backend.inquiry.dto.InquiryCreateRequest;
 import com.idear.backend.inquiry.dto.InquiryDetailResponse;
 import com.idear.backend.inquiry.dto.InquiryResponse;
+import com.idear.backend.inquiry.dto.InquiryUpdateRequest;
 import com.idear.backend.user.domain.User;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,5 +55,16 @@ public class InquiryController {
             @Parameter(description = "문의 ID", required = true) @PathVariable Long inquiryId) {
         InquiryDetailResponse inquiry = inquiryService.getInquiryDetail(user, inquiryId);
         return ResponseEntity.ok(ApiResponse.success(inquiry));
+    }
+
+    @Operation(summary = "문의 수정", description = "문의 내용을 수정합니다. 기기, 브라우저, 문제상황, 이미지를 수정할 수 있습니다. 접수 상태일 때만 수정 가능합니다.")
+    @PostMapping(value = "/{inquiryId}", consumes = { "multipart/form-data" })
+    public ResponseEntity<ApiResponse> updateInquiry(
+            @Parameter(hidden = true) @ValidatedUser User user,
+            @Parameter(description = "문의 ID", required = true) @PathVariable Long inquiryId,
+            @Parameter(description = "수정할 문의 내용", required = true) @RequestPart("request") InquiryUpdateRequest request,
+            @Parameter(description = "에러 이미지 파일 (최대 4장)") @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+        inquiryService.updateInquiry(user, inquiryId, request, images);
+        return ResponseEntity.ok(ApiResponse.success());
     }
 }
