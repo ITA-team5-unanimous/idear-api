@@ -4,12 +4,14 @@ import com.idear.backend.global.ApiResponse;
 import com.idear.backend.global.annotation.ValidatedUser;
 import com.idear.backend.inquiry.application.service.InquiryService;
 import com.idear.backend.inquiry.dto.InquiryCreateRequest;
+import com.idear.backend.inquiry.dto.InquiryResponse;
 import com.idear.backend.user.domain.User;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -33,5 +35,13 @@ public class InquiryController {
             @Parameter(description = "에러 이미지 파일 (최대 4장)") @RequestPart(value = "images", required = false) List<MultipartFile> images) {
         inquiryService.createInquiry(user, inquiryCreateRequest, images);
         return ResponseEntity.ok(ApiResponse.success());
+    }
+
+    @Operation(summary = "사용자 문의 내역 조회", description = "로그인한 사용자의 모든 문의 내역을 조회합니다. 최신순으로 정렬됩니다.")
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<InquiryResponse>>> getUserInquiries(
+            @Parameter(hidden = true) @ValidatedUser User user) {
+        List<InquiryResponse> inquiries = inquiryService.getUserInquiries(user);
+        return ResponseEntity.ok(ApiResponse.success(inquiries));
     }
 }

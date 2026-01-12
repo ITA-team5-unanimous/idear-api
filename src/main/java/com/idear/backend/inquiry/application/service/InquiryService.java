@@ -144,3 +144,18 @@ public class InquiryService {
 
         inquiryRepository.save(inquiry);
     }
+
+    @Transactional(readOnly = true)
+    public List<InquiryResponse> getUserInquiries(User user) {
+        List<Inquiry> inquiries = inquiryRepository.findAllByUserOrderByCreatedAtDesc(user);
+
+        return inquiries.stream()
+                .map(inquiry -> new InquiryResponse(
+                        inquiry.getId(),
+                        inquiry.getTitle(),
+                        inquiry.getProblemDescription(),
+                        inquiry.getStatus(),
+                        inquiry.getCreatedAt()))
+                .collect(Collectors.toList());
+    }
+}
