@@ -3,28 +3,91 @@ package com.idear.backend.inquiry.application.service;
 import com.idear.backend.email.service.EmailService;
 import com.idear.backend.global.exception.CustomException;
 import com.idear.backend.global.exception.ErrorCode;
+import com.idear.backend.idea.application.FileStorageService;
 import com.idear.backend.inquiry.domain.Inquiry;
+import com.idear.backend.inquiry.domain.InquiryImage;
 import com.idear.backend.inquiry.dto.InquiryCreateRequest;
+import com.idear.backend.inquiry.infrastructure.repository.InquiryImageRepository;
 import com.idear.backend.inquiry.infrastructure.repository.InquiryRepository;
+import com.idear.backend.user.domain.User;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class InquiryService {
 
     private final InquiryRepository inquiryRepository;
+    private final InquiryImageRepository inquiryImageRepository;
     private final EmailService emailService;
+    private final FileStorageService fileStorageService;
 
     @Transactional
-    public void createInquiry(InquiryCreateRequest request) {
-        Inquiry inquiry = Inquiry.createInquiry(request.name(), request.email(), request.title(), request.content());
+    public void createInquiry(User user, InquiryCreateRequest request, List<MultipartFile> images) {
+        if (images != null && images.size() > 4) {
+            throw CustomException.of(ErrorCode.TOO_MANY_INQUIRY_IMAGES);
+        }
+
+        Inquiry inquiry = Inquiry.createInquiry(
+                request.occurrenceTime(),
+                request.browser(),
+                request.device(),
+                request.problemDescription(),
+                user);
         inquiryRepository.save(inquiry);
+
+        if (images != null && !images.isEmpty()) {
+            processInquiryImages(inquiry, images);
+        }
+    }
+
+    private void processInquiryImages(Inquiry inquiry, List<MultipartFile> images) {
+        for (MultipartFile image : images) {
+            if (!image.isEmpty()) {
+                // 이미지 파일 검증
+                validateImageFile(image);
+
+                try {
+                    // 파일 확장자 추출
+                    String extension = getFileExtension(image.getOriginalFilename());
+                    String fileName = UUID.randomUUID() + extension;
+
+                    // S3에 업로드 (inquiry/images 디렉토리)
+                    String imageUrl = fileStorageService.uploadFile(image, fileName, "inquiry/images");
+
+                    // InquiryImage 엔티티 생성 및 저장
+                    InquiryImage inquiryImage = InquiryImage.createInquiryImage(inquiry, imageUrl);
+                    inquiryImageRepository.save(inquiryImage);
+                    inquiry.addInquiryImage(inquiryImage);
+                } catch (IOException e) {
+                    throw CustomException.of(ErrorCode.FILE_UPLOAD_ERROR);
+                }
+            }
+        }
+    }
+
+    private void validateImageFile(MultipartFile file) {
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw CustomException.of(ErrorCode.INVALID_INQUIRY_IMAGE_FILE);
+        }
+    }
+
+    private String getFileExtension(String originalFilename) {
+        if (originalFilename == null || !originalFilename.contains(".")) {
+            return "";
+        }
+        return originalFilename.substring(originalFilename.lastIndexOf("."));
     }
 
     @Transactional(readOnly = true)
@@ -42,23 +105,29 @@ public class InquiryService {
     public void replyToInquiry(Long id, String responseContent) {
         Inquiry inquiry = findInquiryById(id);
         if (inquiry.getStatus() == com.idear.backend.inquiry.domain.InquiryStatus.ANSWERED) {
-            CustomException.of(ErrorCode.ALREADY_ANSWERED);
+            throw CustomException.of(ErrorCode.ALREADY_ANSWERED);
         }
+
+        List<String> imageUrls = inquiry.getInquiryImages().stream()
+                .map(InquiryImage::getImageUrl)
+                .collect(Collectors.toList());
 
         // Send email
         Map<String, Object> variables = new HashMap<>();
-        variables.put("userName", inquiry.getInquirerName());
-        variables.put("inquiryContent", inquiry.getContent());
+        variables.put("userName", inquiry.getUser().getName());
+        variables.put("inquiryContent", inquiry.getProblemDescription());
         variables.put("responseContent", responseContent);
+        variables.put("imageUrls", imageUrls);
+        variables.put("hasImages", !imageUrls.isEmpty());
 
         emailService.sendEmailWithTemplate(
-                inquiry.getInquirerEmail(),
+                inquiry.getUser().getEmail(),
                 "[iDear] 문의주신 내용에 대한 답변입니다.",
                 "inquiry-response.html",
-                variables
-        );
+                variables);
 
-        inquiry.markAsAnswered();
+        inquiry.answerToInquiry(responseContent);
+
         inquiryRepository.save(inquiry);
     }
 }

@@ -1,19 +1,211 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iDear - 문의 답변</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+            background-color: #f5f7fa;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .greeting {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .section-content {
+            font-size: 15px;
+            color: #4a5568;
+            line-height: 1.8;
+            background-color: #f7fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .images-section {
+            margin-top: 20px;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .image-item {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .image-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .answer-box {
+            background: linear-gradient(135deg, #f6f9fc 0%, #eef2f7 100%);
+            border-left: 4px solid #48bb78;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+
+        .footer {
+            background-color: #f7fafc;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .footer-text {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 8px;
+        }
+
+        .footer-brand {
+            font-size: 18px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .info-badge {
+            display: inline-block;
+            background-color: #edf2f7;
+            color: #667eea;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+    </style>
 </head>
+
 <body>
-    <h1 th:text="'안녕하세요, ' + ${userName} + '님.'">안녕하세요, [사용자]님.</h1>
-    <p>문의주신 내용에 대한 답변입니다.</p>
-    <hr/>
-    <h2>문의 내용</h2>
-    <p th:text="${inquiryContent}">[문의 내용]</p>
-    <hr/>
-    <h2>답변 내용</h2>
-    <p th:text="${responseContent}">[답변 내용]</p>
-    <br/>
-    <p>감사합니다.</p>
-    <p><strong>iDear 팀 드림</strong></p>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>✉️ 문의 답변</h1>
+            <p>고객님의 문의에 답변드립니다</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Greeting -->
+            <div class="greeting">
+                안녕하세요, <span th:text="${userName}">사용자</span>님! 👋
+            </div>
+
+            <!-- Inquiry Section -->
+            <div class="section">
+                <div class="section-title">📝 문의 내용</div>
+                <div class="section-content" th:text="${inquiryContent}">
+                    [문의 내용이 여기에 표시됩니다]
+                </div>
+
+                <!-- Images Section (if exists) -->
+                <div class="images-section" th:if="${hasImages}">
+                    <span class="info-badge">📷 첨부하신 이미지</span>
+                    <div class="images-grid">
+                        <div class="image-item" th:each="imageUrl : ${imageUrls}">
+                            <img th:src="${imageUrl}" alt="문의 첨부 이미지" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Answer Section -->
+            <div class="section">
+                <div class="section-title">💡 답변 내용</div>
+                <div class="answer-box">
+                    <p th:text="${responseContent}">[답변 내용이 여기에 표시됩니다]</p>
+                </div>
+            </div>
+
+            <!-- Additional Info -->
+            <div
+                style="margin-top: 30px; padding: 20px; background-color: #fffaf0; border-radius: 8px; border-left: 4px solid #f6ad55;">
+                <p style="font-size: 14px; color: #744210; margin-bottom: 8px;">
+                    <strong>📌 추가 문의사항이 있으신가요?</strong>
+                </p>
+                <p style="font-size: 13px; color: #975a16; line-height: 1.6;">
+                    더 궁금하신 사항이 있으시다면 언제든지 문의해 주세요.
+                    최선을 다해 도와드리겠습니다.
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p class="footer-text">감사합니다</p>
+            <p class="footer-brand">iDear Team 💜</p>
+            <p style="font-size: 12px; color: #a0aec0; margin-top: 12px;">
+                아이디어를 안전하게 보호하는 블록체인 플랫폼
+            </p>
+        </div>
+    </div>
 </body>
+
 </html>
