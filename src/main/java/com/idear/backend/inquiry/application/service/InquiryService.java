@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +74,12 @@ public class InquiryService {
     }
 
     private void processInquiryImages(Inquiry inquiry, List<MultipartFile> images) {
+        if (images == null || images.isEmpty()) {
+            return;
+        }
+
+        List<InquiryImage> inquiryImages = new ArrayList<>();
+
         for (MultipartFile image : images) {
             if (!image.isEmpty()) {
                 validateImageFile(image);
@@ -84,12 +91,16 @@ public class InquiryService {
                     String imageUrl = fileStorageService.uploadFile(image, fileName, "inquiry/images");
 
                     InquiryImage inquiryImage = InquiryImage.createInquiryImage(inquiry, imageUrl);
-                    inquiryImageRepository.save(inquiryImage);
                     inquiry.addInquiryImage(inquiryImage);
+
                 } catch (IOException e) {
                     throw CustomException.of(ErrorCode.FILE_UPLOAD_ERROR);
                 }
             }
+        }
+
+        if (!inquiryImages.isEmpty()) {
+            inquiryImageRepository.saveAll(inquiryImages);
         }
     }
 
@@ -169,7 +180,6 @@ public class InquiryService {
                 request.problemDescription());
 
         inquiry.clearImages();
-        inquiryImageRepository.deleteAll(inquiry.getInquiryImages());
 
         if (images != null && !images.isEmpty()) {
             processInquiryImages(inquiry, images);
