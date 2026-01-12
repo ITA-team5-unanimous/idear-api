@@ -91,4 +91,5 @@ jobs:
             SPRING_MAIL_USERNAME='${{ secrets.SPRING_MAIL_USERNAME }}' \
             SPRING_MAIL_PASSWORD='${{ secrets.SPRING_MAIL_PASSWORD }}' \
             BLOCKCHAIN_CONTRACT_ADDRESS='${{ secrets.BLOCKCHAIN_CONTRACT_ADDRESS }}' \
+            USER_DEFAULT_PROFILE_IMAGE_URL='${{ secrets.USER_DEFAULT_PROFILE_IMAGE_URL }}' \
             bash /home/ubuntu/deploy/deploy.sh

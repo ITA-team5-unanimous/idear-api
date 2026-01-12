@@ -6,7 +6,7 @@ import com.idear.backend.user.domain.User;
 import com.idear.backend.user.domain.UserRole;
 import com.idear.backend.user.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -21,6 +21,9 @@ import java.util.Map;
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     private final UserRepository userRepository;
+
+    @Value("${user.profile.default-image-url}")
+    private String defaultProfileImageUrl;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -50,7 +53,12 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         // DB에 유저 없으면 생성
         User user = userRepository.findByProviderInfo(providerInfo)
-                .orElseGet(() -> userRepository.save(User.of(name, email, providerInfo, UserRole.USER)));
+                .orElseGet(() -> {
+                    User newUser = User.of(name, email, providerInfo, UserRole.USER);
+                    // 모든 신규 사용자는 기본 프로필 이미지로 시작
+                    newUser.updateProfileImage(defaultProfileImageUrl);
+                    return userRepository.save(newUser);
+                });
 
         UserInfo userInfo = UserInfo.builder()
                 .id(user.getUserId())
