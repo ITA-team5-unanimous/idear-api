@@ -255,9 +255,12 @@ public class IdeaService {
 		}
 
 		List<IdeaVersion> versions = ideaVersionRepository.findAllByIdeaOrderByVersionNumberDesc(idea);
-		String latestCertificateUrl = getLatestCertificateUrl(versions);
+		IdeaFile latestFile = getLatestFile(versions);
 
-		return IdeaWithVersionsResponse.of(idea, versions, latestCertificateUrl);
+		String latestCertificateUrl = getLatestCertificateUrl(latestFile);
+		Boolean latestVersionRegistered = checkLatestVersionRegistered(latestFile);
+
+		return IdeaWithVersionsResponse.of(idea, versions, latestCertificateUrl, latestVersionRegistered);
 	}
 
 	@Transactional
@@ -410,16 +413,22 @@ public class IdeaService {
 		}
 	}
 
-	private String getLatestCertificateUrl(List<IdeaVersion> versions) {
+	private IdeaFile getLatestFile(List<IdeaVersion> versions) {
 		if (versions.isEmpty()) {
 			return null;
 		}
 
 		IdeaVersion latestVersion = versions.getFirst();
 		return latestVersion.getFiles().stream()
-				.map(IdeaFile::getCertificateUrl)
-				.filter(Objects::nonNull)
 				.findFirst()
 				.orElse(null);
+	}
+
+	private String getLatestCertificateUrl(IdeaFile latestFile) {
+		return latestFile != null ? latestFile.getCertificateUrl() : null;
+	}
+
+	private Boolean checkLatestVersionRegistered(IdeaFile latestFile) {
+		return latestFile != null && latestFile.getRegisterStatus() == IdeaFile.RegisterStatus.REGISTERED;
 	}
 }
