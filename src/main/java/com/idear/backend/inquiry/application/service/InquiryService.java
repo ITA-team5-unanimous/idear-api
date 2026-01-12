@@ -7,6 +7,7 @@ import com.idear.backend.idea.application.FileStorageService;
 import com.idear.backend.inquiry.domain.Inquiry;
 import com.idear.backend.inquiry.domain.InquiryImage;
 import com.idear.backend.inquiry.dto.InquiryCreateRequest;
+import com.idear.backend.inquiry.dto.InquiryDetailResponse;
 import com.idear.backend.inquiry.dto.InquiryResponse;
 import com.idear.backend.inquiry.infrastructure.repository.InquiryImageRepository;
 import com.idear.backend.inquiry.infrastructure.repository.InquiryRepository;
@@ -113,6 +114,33 @@ public class InquiryService {
     public Inquiry findInquiryById(Long id) {
         return inquiryRepository.findById(id)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND_INQUIRY));
+    }
+
+    @Transactional(readOnly = true)
+    public InquiryDetailResponse getInquiryDetail(User user, Long id) {
+        Inquiry inquiry = findInquiryById(id);
+
+        // 사용자가 자신의 문의만 조회할 수 있도록 검증
+        if (!inquiry.getUser().getUserId().equals(user.getUserId())) {
+            throw CustomException.of(ErrorCode.ACCESS_DENIED);
+        }
+
+        List<String> imageUrls = inquiry.getInquiryImages().stream()
+                .map(InquiryImage::getImageUrl)
+                .collect(Collectors.toList());
+
+        return new InquiryDetailResponse(
+                inquiry.getId(),
+                inquiry.getTitle(),
+                inquiry.getOccurrenceTime(),
+                inquiry.getBrowser(),
+                inquiry.getDevice(),
+                inquiry.getProblemDescription(),
+                inquiry.getStatus(),
+                imageUrls,
+                inquiry.getAnswer(),
+                inquiry.getAnsweredAt(),
+                inquiry.getCreatedAt());
     }
 
     @Transactional

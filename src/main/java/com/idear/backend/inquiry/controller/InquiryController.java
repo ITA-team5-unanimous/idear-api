@@ -4,6 +4,7 @@ import com.idear.backend.global.ApiResponse;
 import com.idear.backend.global.annotation.ValidatedUser;
 import com.idear.backend.inquiry.application.service.InquiryService;
 import com.idear.backend.inquiry.dto.InquiryCreateRequest;
+import com.idear.backend.inquiry.dto.InquiryDetailResponse;
 import com.idear.backend.inquiry.dto.InquiryResponse;
 import com.idear.backend.user.domain.User;
 
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -43,5 +45,14 @@ public class InquiryController {
             @Parameter(hidden = true) @ValidatedUser User user) {
         List<InquiryResponse> inquiries = inquiryService.getUserInquiries(user);
         return ResponseEntity.ok(ApiResponse.success(inquiries));
+    }
+
+    @Operation(summary = "문의 상세 조회", description = "문의 ID로 특정 문의의 상세 정보를 조회합니다. 발생시각, 브라우저, 기기, 문제상황, 에러화면, 답변 등 모든 정보를 포함합니다.")
+    @GetMapping("/{inquiryId}")
+    public ResponseEntity<ApiResponse<InquiryDetailResponse>> getInquiryDetail(
+            @Parameter(hidden = true) @ValidatedUser User user,
+            @Parameter(description = "문의 ID", required = true) @PathVariable Long inquiryId) {
+        InquiryDetailResponse inquiry = inquiryService.getInquiryDetail(user, inquiryId);
+        return ResponseEntity.ok(ApiResponse.success(inquiry));
     }
 }
