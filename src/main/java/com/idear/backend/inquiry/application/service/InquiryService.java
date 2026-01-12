@@ -7,6 +7,7 @@ import com.idear.backend.idea.application.FileStorageService;
 import com.idear.backend.inquiry.domain.Inquiry;
 import com.idear.backend.inquiry.domain.InquiryImage;
 import com.idear.backend.inquiry.dto.InquiryCreateRequest;
+import com.idear.backend.inquiry.dto.InquiryResponse;
 import com.idear.backend.inquiry.infrastructure.repository.InquiryImageRepository;
 import com.idear.backend.inquiry.infrastructure.repository.InquiryRepository;
 import com.idear.backend.user.domain.User;
@@ -38,7 +39,9 @@ public class InquiryService {
             throw CustomException.of(ErrorCode.TOO_MANY_INQUIRY_IMAGES);
         }
 
+        String title = generateTitle(request.problemDescription());
         Inquiry inquiry = Inquiry.createInquiry(
+                title,
                 request.occurrenceTime(),
                 request.browser(),
                 request.device(),
@@ -51,21 +54,32 @@ public class InquiryService {
         }
     }
 
+    private String generateTitle(String problemDescription) {
+        if (problemDescription == null || problemDescription.isEmpty()) {
+            return "문의";
+        }
+
+        // 첫 줄 또는 50자까지만 제목으로 사용
+        String title = problemDescription.lines().findFirst().orElse(problemDescription);
+
+        if (title.length() > 50) {
+            return title.substring(0, 50) + "...";
+        }
+
+        return title;
+    }
+
     private void processInquiryImages(Inquiry inquiry, List<MultipartFile> images) {
         for (MultipartFile image : images) {
             if (!image.isEmpty()) {
-                // 이미지 파일 검증
                 validateImageFile(image);
 
                 try {
-                    // 파일 확장자 추출
                     String extension = getFileExtension(image.getOriginalFilename());
                     String fileName = UUID.randomUUID() + extension;
 
-                    // S3에 업로드 (inquiry/images 디렉토리)
                     String imageUrl = fileStorageService.uploadFile(image, fileName, "inquiry/images");
 
-                    // InquiryImage 엔티티 생성 및 저장
                     InquiryImage inquiryImage = InquiryImage.createInquiryImage(inquiry, imageUrl);
                     inquiryImageRepository.save(inquiryImage);
                     inquiry.addInquiryImage(inquiryImage);
@@ -130,4 +144,3 @@ public class InquiryService {
 
         inquiryRepository.save(inquiry);
     }
-}
