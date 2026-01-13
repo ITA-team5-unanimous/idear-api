@@ -230,19 +230,14 @@ public class IdeaService {
 
 	@Transactional(readOnly = true)
 	public Page<IdeaSummaryResponse> getIdeasByUser(User user, Pageable pageable, String keyword) {
-		Page<Idea> ideasPage;
+		Page<IdeaVersion> versionsPage;
 		if (keyword == null || keyword.trim().isEmpty()) {
-			ideasPage = ideaRepository.findByUserOrderByRequestedAtDesc(user, pageable);
+			versionsPage = ideaVersionRepository.findLatestVersionsByUser(user, pageable);
 		} else {
-			ideasPage = ideaRepository.findByUserAndTitleContaining(user, keyword, pageable);
+			versionsPage = ideaVersionRepository.findLatestVersionsByUserAndKeyword(user, keyword, pageable);
 		}
 
-		return ideasPage.map(idea -> {
-			IdeaVersion latestVersion = ideaVersionRepository
-					.findTopByIdeaOrderByVersionNumberDesc(idea)
-					.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_VERSION_NOT_FOUND));
-			return IdeaSummaryResponse.of(idea, latestVersion);
-		});
+		return versionsPage.map(version -> IdeaSummaryResponse.of(version.getIdea(), version));
 	}
 
 	@Transactional(readOnly = true)
