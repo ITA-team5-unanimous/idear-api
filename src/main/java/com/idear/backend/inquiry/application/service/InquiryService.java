@@ -93,6 +93,7 @@ public class InquiryService {
                     InquiryImage inquiryImage = InquiryImage.createInquiryImage(inquiry, imageUrl);
                     inquiry.addInquiryImage(inquiryImage);
 
+                    inquiryImages.add(inquiryImage);
                 } catch (IOException e) {
                     throw CustomException.of(ErrorCode.FILE_UPLOAD_ERROR);
                 }

@@ -9,13 +9,22 @@ import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
 
     private static final String SECURITY_SCHEME_NAME = "Bearer Auth";
+
+    public SwaggerConfig(MappingJackson2HttpMessageConverter converter) {
+        var supportedMediaTypes = new ArrayList<>(converter.getSupportedMediaTypes());
+        supportedMediaTypes.add(new MediaType("application", "octet-stream"));
+        converter.setSupportedMediaTypes(supportedMediaTypes);
+    }
 
     @Bean
     public OpenAPI openAPI() {
