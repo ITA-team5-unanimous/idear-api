@@ -50,19 +50,17 @@ public class InquiryService {
                 request.device(),
                 request.problemDescription(),
                 user);
-        inquiryRepository.save(inquiry);
 
         if (images != null && !images.isEmpty()) {
             processInquiryImages(inquiry, images);
         }
+        inquiryRepository.save(inquiry);
     }
 
     private void processInquiryImages(Inquiry inquiry, List<MultipartFile> images) {
         if (images == null || images.isEmpty()) {
             return;
         }
-
-        List<InquiryImage> inquiryImages = new ArrayList<>();
 
         for (MultipartFile image : images) {
             if (!image.isEmpty()) {
@@ -77,15 +75,10 @@ public class InquiryService {
                     InquiryImage inquiryImage = InquiryImage.createInquiryImage(inquiry, imageUrl);
                     inquiry.addInquiryImage(inquiryImage);
 
-                    inquiryImages.add(inquiryImage);
                 } catch (IOException e) {
                     throw CustomException.of(ErrorCode.FILE_UPLOAD_ERROR);
                 }
             }
-        }
-
-        if (!inquiryImages.isEmpty()) {
-            inquiryImageRepository.saveAll(inquiryImages);
         }
     }
 
