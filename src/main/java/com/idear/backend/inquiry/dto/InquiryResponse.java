@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 public record InquiryResponse(
         Long id,
-        String title,
+        String category,
         String problemDescription,
         InquiryStatus status,
         LocalDateTime createdAt) {

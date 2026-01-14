@@ -43,9 +43,8 @@ public class InquiryService {
             throw CustomException.of(ErrorCode.TOO_MANY_INQUIRY_IMAGES);
         }
 
-        String title = generateTitle(request.problemDescription());
         Inquiry inquiry = Inquiry.createInquiry(
-                title,
+                request.category(),
                 request.occurrenceTime(),
                 request.browser(),
                 request.device(),
@@ -56,21 +55,6 @@ public class InquiryService {
         if (images != null && !images.isEmpty()) {
             processInquiryImages(inquiry, images);
         }
-    }
-
-    private String generateTitle(String problemDescription) {
-        if (problemDescription == null || problemDescription.isEmpty()) {
-            return "문의";
-        }
-
-        // 첫 줄 또는 50자까지만 제목으로 사용
-        String title = problemDescription.lines().findFirst().orElse(problemDescription);
-
-        if (title.length() > 50) {
-            return title.substring(0, 50) + "...";
-        }
-
-        return title;
     }
 
     private void processInquiryImages(Inquiry inquiry, List<MultipartFile> images) {
@@ -144,7 +128,7 @@ public class InquiryService {
 
         return new InquiryDetailResponse(
                 inquiry.getId(),
-                inquiry.getTitle(),
+                inquiry.getCategory(),
                 inquiry.getOccurrenceTime(),
                 inquiry.getBrowser(),
                 inquiry.getDevice(),
@@ -171,10 +155,7 @@ public class InquiryService {
             throw CustomException.of(ErrorCode.CANNOT_UPDATE_INQUIRY);
         }
 
-        String title = generateTitle(request.problemDescription());
-
         inquiry.updateInquiry(
-                title,
                 request.occurrenceTime(),
                 request.browser(),
                 request.device(),
@@ -239,7 +220,7 @@ public class InquiryService {
         return inquiries.stream()
                 .map(inquiry -> new InquiryResponse(
                         inquiry.getId(),
-                        inquiry.getTitle(),
+                        inquiry.getCategory(),
                         inquiry.getProblemDescription(),
                         inquiry.getStatus(),
                         inquiry.getCreatedAt()))

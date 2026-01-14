@@ -7,7 +7,7 @@ import java.util.List;
 
 public record InquiryDetailResponse(
         Long id,
-        String title,
+        String category,
         LocalDateTime occurrenceTime,
         String browser,
         String device,

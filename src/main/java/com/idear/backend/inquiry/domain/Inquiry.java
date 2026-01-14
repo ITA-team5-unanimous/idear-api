@@ -22,7 +22,7 @@ public class Inquiry {
     private Long id;
 
     @Column(nullable = false, length = 100)
-    private String title;
+    private String category;
 
     @Column(nullable = false)
     private LocalDateTime occurrenceTime;
@@ -58,9 +58,9 @@ public class Inquiry {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    private Inquiry(String title, LocalDateTime occurrenceTime, String browser, String device,
+    private Inquiry(String category, LocalDateTime occurrenceTime, String browser, String device,
             String problemDescription, User user) {
-        this.title = title;
+        this.category = category;
         this.occurrenceTime = occurrenceTime;
         this.browser = browser;
         this.device = device;
@@ -69,9 +69,9 @@ public class Inquiry {
         this.user = user;
     }
 
-    public static Inquiry createInquiry(String title, LocalDateTime occurrenceTime, String browser, String device,
+    public static Inquiry createInquiry(String category, LocalDateTime occurrenceTime, String browser, String device,
             String problemDescription, User user) {
-        return new Inquiry(title, occurrenceTime, browser, device, problemDescription, user);
+        return new Inquiry(category, occurrenceTime, browser, device, problemDescription, user);
     }
 
     public void addInquiryImage(InquiryImage inquiryImage) {
@@ -88,9 +88,8 @@ public class Inquiry {
         this.status = InquiryStatus.ANSWERED;
     }
 
-    public void updateInquiry(String title, LocalDateTime occurrenceTime, String browser, String device,
+    public void updateInquiry(LocalDateTime occurrenceTime, String browser, String device,
             String problemDescription) {
-        this.title = title;
         this.occurrenceTime = occurrenceTime;
         this.browser = browser;
         this.device = device;
