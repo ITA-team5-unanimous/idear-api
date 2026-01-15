@@ -30,6 +30,13 @@ import java.util.Map;
 @Slf4j
 public class BlockchainService {
 
+	private static final String ALERT_MESSAGE_SUCCESS = "아이디어 파일이 등록되었습니다. 내용이 맞는지 확인해주세요.";
+	private static final String ALERT_MESSAGE_FAILURE = "아이디어 파일 등록이 실패하였습니다. 상세 내역을 확인해주세요.";
+
+	private static final String REGISTRATION_STATUS_SUCCESS = "성공";
+	private static final String REGISTRATION_STATUS_FAILURE = "실패";
+	private static final String EMAIL_SUBJECT = "iDear - 블록체인 등록 결과";
+
 	@Value("${blockchain.gateway.url}")
 	private String blockchainGatewayUrl;
 
@@ -109,16 +116,8 @@ public class BlockchainService {
 			log.error("Certificate generation failed for fileId={}", ideaFile.getIdeaFileId(), e);
 		}
 
-		alertService.createRegistrationAlert(
-				"아이디어 파일이 등록되었습니다. 내용이 맞는지 확인해주세요.",
-				user,
-				idea.getIdeaId(),
-				ideaFile
-		);
-		Map<String, Object> variables = new HashMap<>();
-		variables.put("userName", user.getName());
-		variables.put("registrationStatus", "성공");
-		emailService.sendEmailWithTemplate(user.getEmail(), "iDear - 블록체인 등록 결과", "blockchain-registration", variables);
+		sendAlertIfEnabled(user, idea.getIdeaId(), ideaFile, ALERT_MESSAGE_SUCCESS);
+		sendRegistrationEmailIfEnabled(user, REGISTRATION_STATUS_SUCCESS, null);
 	}
 
 	private void handleRegistrationFailure(RegistrationResultRequest request, IdeaFile ideaFile){
@@ -139,18 +138,26 @@ public class BlockchainService {
 				.orElseThrow(() -> CustomException.of(ErrorCode.IDEA_NOT_FOUND));
 		User user = idea.getUser();
 
-		alertService.createRegistrationAlert(
-				"아이디어 파일 등록이 실패하였습니다. 상세 내역을 확인해주세요.",
-				user,
-				idea.getIdeaId(),
-				ideaFile
-		);
+		sendAlertIfEnabled(user, idea.getIdeaId(), ideaFile, ALERT_MESSAGE_FAILURE);
+		sendRegistrationEmailIfEnabled(user, REGISTRATION_STATUS_FAILURE, reason.toString());
+	}
 
-		Map<String, Object> variables = new HashMap<>();
-		variables.put("userName", user.getName());
-		variables.put("registrationStatus", "실패");
-		variables.put("failureReason", reason.toString());
-		emailService.sendEmailWithTemplate(user.getEmail(), "iDear - 블록체인 등록 결과", "blockchain-registration", variables);
+	private void sendAlertIfEnabled(User user, Long ideaId, IdeaFile ideaFile, String message) {
+		if (Boolean.TRUE.equals(user.getPushEnabled())) {
+			alertService.createRegistrationAlert(message, user, ideaId, ideaFile);
+		}
+	}
+
+	private void sendRegistrationEmailIfEnabled(User user, String status, String failureReason) {
+		if (Boolean.TRUE.equals(user.getEmailEnabled())) {
+			Map<String, Object> variables = new HashMap<>();
+			variables.put("userName", user.getName());
+			variables.put("registrationStatus", status);
+			if (failureReason != null) {
+				variables.put("failureReason", failureReason);
+			}
+			emailService.sendEmailWithTemplate(user.getEmail(), EMAIL_SUBJECT, "blockchain-registration", variables);
+		}
 	}
 
 	private record CommitRegistrationRequest(

@@ -42,6 +42,14 @@ public class User {
 
     private String profileImageUrl;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean pushEnabled = true;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean emailEnabled = true;
+
     private LocalDateTime deletedAt;
 
     public static User of(String name, String email, String providerInfo, UserRole role){
@@ -75,5 +83,14 @@ public class User {
 
     public void deleteUser(){
         this.deletedAt = LocalDateTime.now();
+    }
+
+    public void updateNotificationSettings(Boolean pushEnabled, Boolean emailEnabled) {
+        if (pushEnabled != null) {
+            this.pushEnabled = pushEnabled;
+        }
+        if (emailEnabled != null) {
+            this.emailEnabled = emailEnabled;
+        }
     }
 }
