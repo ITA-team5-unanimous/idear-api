@@ -147,20 +147,6 @@ public class UserService {
         }
     }
 
-    @Transactional
-    public void deleteProfileImage(User user) {
-        if (user.getProfileImageUrl() == null) {
-            return;
-        }
-
-        // S3에서 삭제
-        deleteOldProfileImage(user.getProfileImageUrl());
-
-        // 기본 이미지로 변경
-        String defaultImageUrl = userProperties.getProfile().getDefaultImageUrl();
-        user.updateProfileImage(defaultImageUrl);
-    }
-
     // 헬퍼 메서드
     private String generateVerificationCode() {
         return String.format("%06d", secureRandom.nextInt(1000000));
