@@ -37,7 +37,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserInfoResponse getUserInfo(User user) {
-        return UserInfoResponse.from(user);
+        return UserInfoResponse.from(user, userProperties.getProfile().getDefaultImageUrl());
     }
 
     @Transactional
@@ -150,20 +150,6 @@ public class UserService {
         } catch (IOException e) {
             throw CustomException.of(ErrorCode.FILE_UPLOAD_ERROR);
         }
-    }
-
-    @Transactional
-    public void deleteProfileImage(User user) {
-        if (user.getProfileImageUrl() == null) {
-            return;
-        }
-
-        // S3에서 삭제
-        deleteOldProfileImage(user.getProfileImageUrl());
-
-        // 기본 이미지로 변경
-        String defaultImageUrl = userProperties.getProfile().getDefaultImageUrl();
-        user.updateProfileImage(defaultImageUrl);
     }
 
     // 헬퍼 메서드

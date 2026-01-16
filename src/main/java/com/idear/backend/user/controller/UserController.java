@@ -112,14 +112,6 @@ public class UserController {
 		return ResponseEntity.ok(ApiResponse.success(ProfileImageResponse.of(profileImageUrl)));
 	}
 
-	@Operation(summary = "프로필 이미지 삭제", description = "프로필 이미지를 삭제하고 기본 이미지로 변경합니다.")
-	@DeleteMapping("/profile-image")
-	public ResponseEntity<ApiResponse<Void>> deleteProfileImage(
-			@Parameter(hidden = true) @ValidatedUser User user) {
-		userService.deleteProfileImage(user);
-		return ResponseEntity.ok(ApiResponse.success());
-	}
-
 	@Operation(summary = "알림 설정 변경", description = "푸시 알림 및 이메일 수신 설정을 변경합니다.")
 	@PatchMapping("/notification-settings")
 	public ResponseEntity<ApiResponse<Void>> updateNotificationSettings(
