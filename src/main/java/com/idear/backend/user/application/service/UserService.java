@@ -37,7 +37,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserInfoResponse getUserInfo(User user) {
-        return UserInfoResponse.from(user);
+        return UserInfoResponse.from(user, userProperties.getProfile().getDefaultImageUrl());
     }
 
     @Transactional

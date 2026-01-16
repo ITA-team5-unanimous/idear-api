@@ -13,13 +13,18 @@ public class UserInfoResponse {
 	private String publicKey;
 	private String profileImageUrl;
 
-	public static UserInfoResponse from(User user) {
+	public static UserInfoResponse from(User user, String defaultImageUrl) {
+		String profileImageUrl = user.getProfileImageUrl();
+		if (profileImageUrl == null || profileImageUrl.isBlank()) {
+			profileImageUrl = defaultImageUrl;
+		}
+
 		return UserInfoResponse.builder()
 				.name(user.getName())
 				.email(user.getEmail())
 				.provider(user.getProvider())
 				.publicKey(user.getPublicKey())
-				.profileImageUrl(user.getProfileImageUrl())
+				.profileImageUrl(profileImageUrl)
 				.build();
 	}
 }
