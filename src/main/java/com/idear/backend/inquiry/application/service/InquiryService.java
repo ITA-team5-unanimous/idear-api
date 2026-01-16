@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,11 +134,15 @@ public class InquiryService {
 
     @Transactional
     public void updateInquiry(User user, Long id, InquiryUpdateRequest request, List<MultipartFile> images) {
-        if (images != null && images.size() > 4) {
+        Inquiry inquiry = findInquiryById(id);
+
+        int existingImageCount = inquiry.getInquiryImages().size();
+        int newImageCount = (images != null) ? (int) images.stream().filter(i -> !i.isEmpty()).count() : 0;
+
+        if (existingImageCount + newImageCount > 4) {
             throw CustomException.of(ErrorCode.TOO_MANY_INQUIRY_IMAGES);
         }
 
-        Inquiry inquiry = findInquiryById(id);
         if (!inquiry.getUser().getUserId().equals(user.getUserId())) {
             throw CustomException.of(ErrorCode.ACCESS_DENIED);
         }
@@ -153,8 +156,6 @@ public class InquiryService {
                 request.browser(),
                 request.device(),
                 request.problemDescription());
-
-        inquiry.clearImages();
 
         if (images != null && !images.isEmpty()) {
             processInquiryImages(inquiry, images);
