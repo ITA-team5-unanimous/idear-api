@@ -5,9 +5,12 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.idear.backend.user.domain.User;
 
 @Entity
 @Getter
@@ -18,40 +21,82 @@ public class Inquiry {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String inquirerName;
+    @Column(nullable = false, length = 100)
+    private String category;
 
     @Column(nullable = false)
-    private String inquirerEmail;
+    private LocalDateTime occurrenceTime;
 
     @Column(nullable = false)
-    private String title;
+    private String browser;
+
+    @Column(nullable = false)
+    private String device;
 
     @Lob
     @Column(nullable = false)
-    private String content;
+    private String problemDescription;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private InquiryStatus status;
 
+    @OneToMany(mappedBy = "inquiry", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<InquiryImage> inquiryImages = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false)
+    private User user;
+
+    @Lob
+    @Column
+    private String answer;
+
+    @Column
+    private LocalDateTime answeredAt;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
-    
-    public static Inquiry createInquiry(String name, String email, String title, String content) {
-        Inquiry inquiry = new Inquiry();
-        inquiry.inquirerName = name;
-        inquiry.inquirerEmail = email;
-        inquiry.title = title;
-        inquiry.content = content;
-        inquiry.status = InquiryStatus.PENDING;
-        return inquiry;
+    private Inquiry(String category, LocalDateTime occurrenceTime, String browser, String device,
+            String problemDescription, User user) {
+        this.category = category;
+        this.occurrenceTime = occurrenceTime;
+        this.browser = browser;
+        this.device = device;
+        this.problemDescription = problemDescription;
+        this.status = InquiryStatus.RECEIVED;
+        this.user = user;
     }
 
-    public void markAsAnswered() {
+    public static Inquiry createInquiry(String category, LocalDateTime occurrenceTime, String browser, String device,
+            String problemDescription, User user) {
+        return new Inquiry(category, occurrenceTime, browser, device, problemDescription, user);
+    }
+
+    public void addInquiryImage(InquiryImage inquiryImage) {
+        this.inquiryImages.add(inquiryImage);
+    }
+
+    public void removeInquiryImage(InquiryImage inquiryImage) {
+        this.inquiryImages.remove(inquiryImage);
+    }
+
+    public void answerToInquiry(String answerContent) {
+        this.answer = answerContent;
+        this.answeredAt = LocalDateTime.now();
         this.status = InquiryStatus.ANSWERED;
+    }
+
+    public void updateInquiry(LocalDateTime occurrenceTime, String browser, String device,
+            String problemDescription) {
+        this.occurrenceTime = occurrenceTime;
+        this.browser = browser;
+        this.device = device;
+        this.problemDescription = problemDescription;
+    }
+
+    public void clearImages() {
+        this.inquiryImages.clear();
     }
 }

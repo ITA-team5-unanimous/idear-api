@@ -8,6 +8,7 @@ import com.idear.backend.user.dto.request.RegisterPublicKeyRequest;
 import com.idear.backend.user.dto.request.SendEmailVerificationRequest;
 import com.idear.backend.user.dto.request.UpdateEmailRequest;
 import com.idear.backend.user.dto.request.UpdateNameRequest;
+import com.idear.backend.user.dto.request.UpdateNotificationSettingsRequest;
 import com.idear.backend.user.dto.request.VerifyEmailCodeRequest;
 import com.idear.backend.user.dto.response.ProfileImageResponse;
 import com.idear.backend.user.dto.response.UserInfoResponse;
@@ -109,5 +110,14 @@ public class UserController {
 			@RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
 		String profileImageUrl = userService.uploadProfileImage(user, file);
 		return ResponseEntity.ok(ApiResponse.success(ProfileImageResponse.of(profileImageUrl)));
+	}
+
+	@Operation(summary = "알림 설정 변경", description = "푸시 알림 및 이메일 수신 설정을 변경합니다.")
+	@PatchMapping("/notification-settings")
+	public ResponseEntity<ApiResponse<Void>> updateNotificationSettings(
+			@Parameter(hidden = true) @ValidatedUser User user,
+			@RequestBody UpdateNotificationSettingsRequest request) {
+		userService.updateNotificationSettings(user, request.getPush(), request.getEmail());
+		return ResponseEntity.ok(ApiResponse.success());
 	}
 }

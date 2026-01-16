@@ -1,4 +1,12 @@
 package com.idear.backend.inquiry.dto;
 
-public record InquiryCreateRequest(String name, String email, String title, String content) {
-}
+import java.time.LocalDateTime;
+
+public record InquiryCreateRequest(
+		String category,
+        LocalDateTime occurrenceTime,
+        String browser,
+        String device,
+        String problemDescription
+){}
+

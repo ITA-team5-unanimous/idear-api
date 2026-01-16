@@ -55,6 +55,11 @@ public class UserService {
         user.deleteUser();
     }
 
+    @Transactional
+    public void updateNotificationSettings(User user, Boolean pushEnabled, Boolean emailEnabled) {
+        user.updateNotificationSettings(pushEnabled, emailEnabled);
+    }
+
     // 이메일 인증 메서드
     public void sendEmailVerificationCode(String email) {
         // 이메일 중복 확인

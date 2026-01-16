@@ -12,6 +12,8 @@ public class UserInfoResponse {
 	private String provider;
 	private String publicKey;
 	private String profileImageUrl;
+	private Boolean pushEnabled;
+	private Boolean emailEnabled;
 
 	public static UserInfoResponse from(User user, String defaultImageUrl) {
 		String profileImageUrl = user.getProfileImageUrl();
@@ -25,6 +27,8 @@ public class UserInfoResponse {
 				.provider(user.getProvider())
 				.publicKey(user.getPublicKey())
 				.profileImageUrl(profileImageUrl)
+				.pushEnabled(user.getPushEnabled())
+				.emailEnabled(user.getEmailEnabled())
 				.build();
 	}
 }
